@@ -5,9 +5,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    f = open("hello_world.txt", "w")
-    f.write("Hello World!")
-    f.close()
     return 'Hello World!'
 
 
