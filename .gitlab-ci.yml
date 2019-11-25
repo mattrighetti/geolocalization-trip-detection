@@ -1,0 +1,48 @@
+image: maven:3.5.3-jdk-8
+
+cache:
+  paths:
+    - .m2/
+
+variables:
+  GIT_DEPTH: 1
+  IMAGE_NAME: lucaferrera/flask-geolocalization
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+
+stages:
+  - test
+  - package
+
+maven-test:
+  stage: test
+  script: "mvn test"
+
+.docker-job: &docker_job
+  image: docker:latest
+
+  variables:
+    REMOTE_IMAGE_NAME: hub.docker.com/repository/docker/${IMAGE_NAME}
+
+  before_script:
+    - docker login -u ${NEXUS_USER} -p ${NEXUS_TOKEN} ${NEXUS_URL}
+
+docker-build-latest:
+  stage: package
+
+  <<: *docker_job
+
+  script:
+    - docker build --build-arg COMMIT_SHA=${CI_COMMIT_SHA} --pull -t ${REMOTE_IMAGE_NAME}:latest .
+    - docker run --rm ${REMOTE_IMAGE_NAME} cat /usr/app/commit.sha
+    - docker push ${REMOTE_IMAGE_NAME}:latest
+    - docker save ${REMOTE_IMAGE_NAME}:latest -o latest.tar.gz
+
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - latest.tar.gz
+
+  only:
+    - master
+    - tags
