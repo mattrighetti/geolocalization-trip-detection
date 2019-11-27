@@ -39,11 +39,6 @@ docker-build-latest:
     - docker pull ${IMAGE_NAME}:latest
     - docker run --rm -d -p 5000:5000 ${IMAGE_NAME} 
 
-  artifacts:
-    when: always
-    expire_in: 1 day
-    paths:
-      - latest.tar.gz
 
   only:
     - master
