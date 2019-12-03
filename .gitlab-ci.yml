@@ -11,7 +11,7 @@ stages:
   image: docker:latest
 
   variables:
-    REMOTE_IMAGE_NAME: hub.docker.com/repository/docker/${IMAGE_NAME}
+    REMOTE_IMAGE_NAME: /${IMAGE_NAME}
 
 
 docker-build-branches:
