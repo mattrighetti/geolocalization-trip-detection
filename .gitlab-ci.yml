@@ -20,7 +20,7 @@ docker-build-branches:
   <<: *docker_job
 
   script:
-    - docket tag ${IMAGE_NAME} ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
     - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
     - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
 
