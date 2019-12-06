@@ -1,3 +1,11 @@
+from shapely.geometry import Polygon, Point, LineString, shape
+from enum import Enum
+from haversine import haversine
+from geopy import distance
+
+import math
+import geopandas as gpd
+
 # TODO Step 0 Parse the GeoJSON.
 #       Input: Flask request.args.get()
 #       Output: user_route -> List of Point (Shapely class)
@@ -11,16 +19,18 @@ user_route = []
 #   params:  - user_route: a list of Point()
 #   returns: - the first point of the user route
 def find_first(user_route):
+    return user_route[0]
 
 #   Find the last user coordinates.
 #   params:  - user_route: a list of Point()
 #   returns: - the last point of the user route
 def find_last(user_route):
+    return user_route[len(user_route) - 1]
 
 # TODO Step 2 Find bus stops near I. Do the same for E.
 #       Input: I and F
 #       Output: 2 list Tuples: Ilist, Flist -> tuple: (bus, stop)
-
+# N.B. User haversine() to see the distance between two Point and compare the value with a treshold
 
 # TODO Step 3 Do the intersection in order to find the bus lines in common.
 #       Input: Ilist, Flist
@@ -59,4 +69,3 @@ def find_last(user_route):
 
 # TODO Step 8 Save the data in the database
 #       Input: user_id, ticket_id, km_travelled
-
