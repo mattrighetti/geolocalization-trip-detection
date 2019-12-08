@@ -11,20 +11,20 @@ import geopandas as gpd
 #       Output: user_route -> List of Point (Shapely class)
 user_route = []
 
-# TODO Step 1 Find the first(I) and the last(F) user coordinates.
+# Step 1 Find the first(I) and the last(F) user coordinates.
 #       Input: user_route: a list of Point()
 #       Output: 2 Point -> I and F
 
 #   Find the first user coordinates.
 #   params:  - user_route: a list of Point()
 #   returns: - the first point of the user route
-def find_first(user_route):
+def find_first(user_route: list):
     return user_route[0]
 
 #   Find the last user coordinates.
 #   params:  - user_route: a list of Point()
 #   returns: - the last point of the user route
-def find_last(user_route):
+def find_last(user_route: list):
     return user_route[len(user_route) - 1]
 
 # TODO Step 2 Find bus stops near I. Do the same for E.
@@ -42,7 +42,7 @@ def find_last(user_route):
 #       Output: bus_routes -> list of list of Point -> every list of Point represents a bus route
 
 
-# TODO Step 5 For every route in bus_route compute its metrics.
+# Step 5 For every route in bus_route compute its metrics.
 #
 #       metrics: 1) user_coordinates_matched: number of Point in user_route contained in at least
 #                                             one polygon of the bus route.
