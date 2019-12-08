@@ -30,7 +30,7 @@ def find_last(user_route):
 # TODO Step 2 Find bus stops near I. Do the same for E.
 #       Input: I and F
 #       Output: 2 list Tuples: Ilist, Flist -> tuple: (bus, stop)
-# N.B. User haversine() to see the distance between two Point and compare the value with a treshold
+# N.B. User haversine() to see the distance between two Point and compare the value with a threshold
 
 # TODO Step 3 Do the intersection in order to find the bus lines in common.
 #       Input: Ilist, Flist
