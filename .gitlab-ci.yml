@@ -17,6 +17,7 @@ test:
   stage: test
   script:
   - ls
+  - apt-get update -qy
 
 
 docker-build-branches:
