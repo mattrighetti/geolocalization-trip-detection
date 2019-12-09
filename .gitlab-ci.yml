@@ -17,7 +17,7 @@ test:
   stage: test
   script:
   - ls
-  - apt-get update -qy
+  - docker exec ${IMAGE_NAME} dragonbanana_test.py
 
 
 docker-build-branches:
