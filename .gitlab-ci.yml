@@ -8,7 +8,7 @@ stages:
   - package
 
 .docker-job: &docker_job
-  image: lucaferrera/flask-geolocalization:latest
+  image: docker:latest
 
   variables:
     REMOTE_IMAGE_NAME: /${IMAGE_NAME}
@@ -17,8 +17,8 @@ stages:
 test:
   stage: test
   script:
-  - ls
-  - python3 dragonbanana_test.py
+    - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
   
 
 
