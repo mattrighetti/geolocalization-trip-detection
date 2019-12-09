@@ -57,8 +57,7 @@ class LinestringSelector(object):
                                                                       bus_start_stop_tuple[1],
                                                                       bus_start_stop_tuple[2])
 
-                linestring_data = (bus_start_stop_tuple[0], sliced_linestring)
-                sliced_linestrings_array.append(linestring_data)
+                sliced_linestrings_array.append(sliced_linestring)
 
         return sliced_linestrings_array
 
