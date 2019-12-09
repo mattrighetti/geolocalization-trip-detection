@@ -54,10 +54,10 @@ class routes_analyzer(object):
 
         result_dict = { 
                     "route" : bus_route, 
-                    "number_user_coordinates": len(user_coordinates_matched), 
-                    "number_polygons": len(polygons_matched),
                     "percentage_user": user_metric,
-                    "percentage_poly": poly_metric
+                    "number_user_coordinates": len(user_coordinates_matched), 
+                    "percentage_poly": poly_metric,
+                    "number_polygons": len(polygons_matched)
                 }
 
         return result_dict
