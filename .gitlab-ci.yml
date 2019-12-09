@@ -19,7 +19,9 @@ test:
   - ls
   - docker ps
   - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} pytest
+  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+  - docker exec ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} pytest
+  
 
 
 docker-build-branches:
