@@ -8,7 +8,7 @@ stages:
   - package
 
 .docker-job: &docker_job
-  image: docker:latest
+  image: lucaferrera/flask-geolocalization:latest
 
   variables:
     REMOTE_IMAGE_NAME: /${IMAGE_NAME}
@@ -18,7 +18,7 @@ test:
   stage: test
   script:
   - ls
-  - python dragonbanana_test.py
+  - python3 dragonbanana_test.py
   
 
 
