@@ -17,6 +17,7 @@ test:
   stage: test
   script:
   - ls
+  - docker ps
   - docker exec ${IMAGE_NAME} pytest
 
 
