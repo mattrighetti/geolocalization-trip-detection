@@ -9,8 +9,8 @@ stages:
 test:
   stage: test
   script:
-  - pip install -r requirements.txt
-  - python dragonbanana_test.py
+  - pip3 install -r requirements.txt
+  - python3 dragonbanana_test.py
 
 
 .docker-job: &docker_job
