@@ -18,7 +18,8 @@ test:
   script:
   - ls
   - docker ps
-  - docker exec ${IMAGE_NAME} pytest
+  - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} pytest
 
 
 docker-build-branches:
@@ -27,7 +28,7 @@ docker-build-branches:
   <<: *docker_job
 
   script:
-    - docker pull ${IMAGE_NAME}:latest
+    - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
     - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
 
   only:
