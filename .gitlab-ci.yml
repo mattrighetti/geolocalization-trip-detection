@@ -17,7 +17,7 @@ test:
   stage: test
   script:
   - ls
-  - docker exec ${IMAGE_NAME} dragonbanana_test.py
+  - docker exec ${IMAGE_NAME} pytest
 
 
 docker-build-branches:
