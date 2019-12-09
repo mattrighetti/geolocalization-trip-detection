@@ -18,10 +18,7 @@ test:
   stage: test
   script:
   - ls
-  - docker ps
-  - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} -name ${CONTAINER_NAME}
-  - docker exec ${CONTAINER_NAME} pytest
+  - python dragonbanana_test
   
 
 
