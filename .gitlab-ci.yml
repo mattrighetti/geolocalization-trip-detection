@@ -17,8 +17,11 @@ stages:
 test:
   stage: test
   script:
-    - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-    - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+  - ls
+  - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} -name ${CONTAINER_NAME}
+  - docker ps
+  - docker exec ${CONTAINER_NAME} pytest
   
 
 
