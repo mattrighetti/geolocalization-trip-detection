@@ -1,6 +1,6 @@
 import geopandas as gpd
 from shapely.geometry import Point
-
+import pytest
 import stops
 
 if __name__ == '__main__':
@@ -17,3 +17,7 @@ if __name__ == '__main__':
     Flist = s.find_bus_stops_close_to(p2, radius=0.0005)
     # Filtering the buses that are not in common in the two sets
     Ilist, Flist = stops.intercept(Ilist, Flist)
+
+
+def test_answer():
+    assert True
