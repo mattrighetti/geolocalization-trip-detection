@@ -1,6 +1,7 @@
 variables:
   GIT_DEPTH: 1
   IMAGE_NAME: lucaferrera/flask-geolocalization
+  CONTAINER_NAME: test_container
 
 stages:
   - test
@@ -19,8 +20,8 @@ test:
   - ls
   - docker ps
   - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker exec ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} pytest
+  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} -name ${CONTAINER_NAME}
+  - docker exec ${CONTAINER_NAME} pytest
   
 
 
