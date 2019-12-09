@@ -6,8 +6,10 @@ from shapely.geometry import LineString, Point
 # List of NP.ARRAYs with data
 
 class LinestringSelector(object):
+
     def __init__(self, Istops, Fstops):
         self.data = gpd.read_file("./data/bus routes.geojson")
+        self.SlicedLineStringList = []
         self.Istops = Istops
         self.Fstops = Fstops
 
@@ -19,10 +21,8 @@ class LinestringSelector(object):
         linestring_array = []
 
         for i in range(len(linestring.coords) - 1):
-            tuple_1 = linestring.coords[i]
-            tuple_2 = linestring.coords[i + 1]
-            first_point = Point(tuple_1)
-            second_point = Point(tuple_2)
+            first_point = Point(linestring.coords[i])
+            second_point = Point(linestring.coords[i + 1])
             linestring_new = LineString([first_point, second_point])
             linestring_array.append(linestring_new)
 
@@ -37,9 +37,12 @@ class LinestringSelector(object):
         # TODO check index order to apply logic (if starting comes latter than finishing then do logic)
         if starting_index < finishing_index:
             sliced_multi_linestring = multi_linestring[starting_index:finishing_index]
+            return sliced_multi_linestring
+
         elif finishing_index < starting_index:
             # TODO check a scenario to see what could be done
             raise Exception("Not yet implemented")
+
         else:
             # TODO can they be equal? Should not be
             return np.array([])
