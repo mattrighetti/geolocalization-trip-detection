@@ -12,7 +12,9 @@ def intercept(Ilist: list, Flist: list):
     common_lines = _find_common_bus_lines(Ilist, Flist)
     filtered_IList = [element for element in Ilist if element[4] in common_lines]
     filtered_FList = [element for element in Flist if element[4] in common_lines]
-    return filtered_IList, filtered_FList
+    result_IDataframe = gpd.GeoDataFrame(filtered_IList, columns=['id', 'x', 'y', 'location', 'bus_id', 'point'])
+    result_FDataframe = gpd.GeoDataFrame(filtered_FList, columns=['id', 'x', 'y', 'location', 'bus_id', 'point'])
+    return result_IDataframe, result_FDataframe
 
 class stops(object):
 
@@ -30,7 +32,14 @@ class stops(object):
     def _search_indexes(self, from_x=0, to_x=0, from_y=0, to_y=0):
         assert from_x < to_x, "x coordinates range is wrong. from_x must be smaller than to_x"
         # TODO: use binary search
-        result = [record for record in self.dataset.values if from_x < record[1] < to_x and from_y < record[2] < to_y]
+        partial_result = [record for record in self.dataset.values if from_x < record[1] < to_x and from_y < record[2] < to_y]
+        result = []
+        for record in partial_result:
+            bus_lines = record[4].split(',')
+            for bus_id in bus_lines:
+                new_record = record.copy()
+                new_record[4] = bus_id
+                result.append(new_record)
         return result
 
     def find_bus_stops_close_to(self, p: Point, radius=0.001):
