@@ -2,10 +2,8 @@ class metrics_evaluator(object):
 
     def __init__(self, route_dictionaries: list):
         self.route_dictionaries = route_dictionaries
-    
-    def evaluate(self):
-        best_route = None
 
+    def evaluate(self):
         # Get the metrics
         metrics = list(self.route_dictionaries[0].keys())
         metrics.remove("route")
@@ -17,14 +15,14 @@ class metrics_evaluator(object):
             best_routes = self._evaluate_metric(best_routes, metric)
 
             # In case there is only one route stop the computation before the loop ends
-            if len(best_route) == 1:
+            if len(best_routes) == 1:
                 break
-        
+
         # Return the first elements in case there are, after the evaluation, routes with the same metrics values
-        return best_route[0]
-    
-    #Evaluate the list of dictionary on a single metric    
-    def _evaluate_metric(self, routes:list, metric: str ):
+        return best_routes[0]
+
+    # Evaluate the list of dictionary on a single metric
+    def _evaluate_metric(self, routes: list, metric: str):
         best_routes_partial = []
 
         # Find the highest metric value in the dictionary
@@ -36,14 +34,14 @@ class metrics_evaluator(object):
         if max_value <= 1:
             uncertainty = 0.05
             max_value -= uncertainty
-            
+
             for route in routes:
                 if route[metric] >= max_value:
                     best_routes_partial.append(route)
         else:
-            #the metric is not a percentage value, don't apply the uncertainty
+            # the metric is not a percentage value, don't apply the uncertainty
             for route in routes:
-                if route[metric] == max_value:
+                if route[metric] >= max_value:
                     best_routes_partial.append(route)
 
         return best_routes_partial
