@@ -34,7 +34,7 @@ class LinestringSelector(object):
 
         return start_final_points_array
 
-    def _get_sliced_routes(self):
+    def get_sliced_routes(self):
         """
         Returns an array of type [ (bus_id, sliced_linestring), ... ]
         """
