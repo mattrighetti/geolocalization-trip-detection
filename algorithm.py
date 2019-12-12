@@ -64,7 +64,7 @@ def find_points(user_route):
 
 if __name__ == '__main__':
 
-    from Utils.post_request import MongoDBManager
+    from Utils.database_manager import MongoDBManager
     # TODO this should be created once and kept up and running
     database_manager = MongoDBManager()
 

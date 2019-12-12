@@ -8,9 +8,9 @@ class MongoDBManager(object):
         self.client = pymongo.MongoClient(
             "mongodb+srv://python-microservice:J5MTvCIJMb5TcM5S@geolocalization-izvf1.mongodb.net/test?retryWrites=true&w=majority")
         # Get database
-        self.db = client.get_database('trips_db')
+        self.db = client.get_database('backend')
         # Get collection
-        self.trip_records = db.trips_record
+        self.trip_records = db.trips
 
     def save_to_database_args(self, user_id=None, ticket_id=None,
                               km_travelled=None, transportation=None, start_time=None, end_time=None):
