@@ -64,13 +64,20 @@ def find_points(user_route):
 
 if __name__ == '__main__':
 
+    from Utils.post_request import MongoDBManager
+    # TODO this should be created once and kept up and running
+    database_manager = MongoDBManager()
+
     # STEP 0
     # Parse the GeoJSON.
     user_data = {
-        'route': route,
-        'user_id': user_id,
-        'ticket_id': ticket_id
-    }
+        'user_id' : user_id,
+        'ticket_id' : ticket_id,
+        'km_travelled' : None,
+        'transportation' : None,
+        'start_time' : None,
+        'end_time' : None
+        }
 
     # STEP 1
     # Retrieving initial and finhsing Point of user's trip
@@ -109,6 +116,4 @@ if __name__ == '__main__':
 
     # STEP 8
     # Save the data in the database
-    # TODO change API endpoint
-    from Utils.post_request import save_to_database
-    save_to_database(user_data['user_id'], user_data['ticket_id'], km_travelled)
+    database_manager.save_to_database_dict(user_data)
