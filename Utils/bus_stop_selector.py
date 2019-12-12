@@ -1,7 +1,5 @@
-import geopandas as gpd
 from shapely.geometry import Point
-import pytest
-import stops
+from Utils import stops
 
 if __name__ == '__main__':
     # I am instantiating the stop object

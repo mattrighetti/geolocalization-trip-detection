@@ -1,4 +1,4 @@
-from metrics_evaluator import metrics_evaluator
+from Utils.metrics_evaluator import metrics_evaluator
 
 # Test the selection method on the first metric
 def test_percentage_user():

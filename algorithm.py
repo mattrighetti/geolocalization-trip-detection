@@ -1,11 +1,3 @@
-from shapely.geometry import Polygon, Point, LineString, shape
-from enum import Enum
-from haversine import haversine
-from geopy import distance
-
-import math
-import geopandas as gpd
-
 # TODO Step 0 Parse the GeoJSON.
 #       Input: Flask request.args.get()
 #       Output: user_route -> List of Point (Shapely class)
@@ -86,7 +78,7 @@ if __name__ == '__main__':
 
     # STEP 2
     # Find bus stops near I. Do the same for E
-    from stops import stops
+    from Utils.stops import stops
     stops_object = stops()
     Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=5e-3)
     Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=5e-3)
@@ -97,7 +89,7 @@ if __name__ == '__main__':
 
     # STEP 4
     # Create a list of bus routes that have a starting point in Ilist and an end in Flist
-    from linestring_selector import LinestringSelector
+    from Utils.linestring_selector import LinestringSelector
     linestring_selector = LinestringSelector(Ilist, Flist)
     sliced_routes = linestring_selector.get_sliced_routes()
 
@@ -107,7 +99,7 @@ if __name__ == '__main__':
 
     # STEP 6
     # Search the dictionary with the maximum metrics
-    from metrics_evaluator import metrics_evaluator
+    from Utils.metrics_evaluator import metrics_evaluator
     evaluator = metrics_evaluator(route_dictionaries)
     best_route = evaluator.evaluate()
 
@@ -118,5 +110,5 @@ if __name__ == '__main__':
     # STEP 8
     # Save the data in the database
     # TODO change API endpoint
-    from post_request import save_to_database
+    from Utils.post_request import save_to_database
     save_to_database(user_data['user_id'], user_data['ticket_id'], km_travelled)
