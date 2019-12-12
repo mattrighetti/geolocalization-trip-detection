@@ -30,7 +30,7 @@ def find_last(user_route):
 # TODO Step 2 Find bus stops near I. Do the same for E.
 #       Input: I and F
 #       Output: 2 list Tuples: Ilist, Flist -> tuple: (bus, stop)
-# N.B. User haversine() to see the distance between two Point and compare the value with a treshold
+# N.B. User haversine() to see the distance between two Point and compare the value with a threshold
 
 # TODO Step 3 Do the intersection in order to find the bus lines in common.
 #       Input: Ilist, Flist
@@ -50,11 +50,15 @@ def find_last(user_route):
 #                                     Point of user_route.
 #
 #       Input: bus_routes, user_route
-#       Output: list of route_dictionary { 
-#                                          "route" : bus_route (the list of Point), 
-#                                          "user_coordinates_matched": user_coordinates_matched, 
-#                                          "polygons_matched": polygons_matched
-#                                        }
+#       Output: list of route_dictionary         
+#                           result_dict = { 
+#                                               "route" : bus_route, 
+#                                               "percentage_user": user_metric,
+#                                               "number_user_coordinates": len(user_coordinates_matched), 
+#                                               "percentage_poly": poly_metric,
+#                                               "number_polygons": len(polygons_matched)
+#                                           }
+
 
 
 # TODO Step 6 Search the dictionary with the maximum metrics (TODO Decide a criterion to choose the best one)
