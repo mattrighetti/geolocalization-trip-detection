@@ -3,7 +3,7 @@
 #       Output: user_route -> List of Point (Shapely class)
 user_route = []
 
-# TODO Step 1 Find the first(I) and the last(F) user coordinates.
+# Step 1 Find the first(I) and the last(F) user coordinates.
 #       Input: user_route: a list of Point()
 #       Output: 2 Point -> I and F
 
@@ -30,7 +30,7 @@ def find_points(user_route):
 #       Output: bus_routes -> list of list of Point -> every list of Point represents a bus route
 
 
-# TODO Step 5 For every route in bus_route compute its metrics.
+# Step 5 For every route in bus_route compute its metrics.
 #
 #       metrics: 1) user_coordinates_matched: number of Point in user_route contained in at least
 #                                             one polygon of the bus route.
