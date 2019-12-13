@@ -67,8 +67,8 @@ class routes_analyzer(object):
     # Create the vertices of a polygon given two points of the route
     def _create_polygon_vertices(self, first_p: Point, second_p: Point):
 
-        offset_small_x = 0.00020810000000004436
-        offset_small_y = 0.00015400000000198588
+        offset_small_x = 9.999999999976694e-05
+        offset_small_y = 5.000000000165983e-05
         offset_x = 0.0001499999999996504
         offset_y = 0.00013599999999769352
 

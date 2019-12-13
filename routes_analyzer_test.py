@@ -20,6 +20,7 @@ def test_1():
     user_route.append(p1)
     user_route.append(p2)
     user_route.append(p3)
+    user_route.append(p4)
     user_route.append(p5)
 
     analyzer = routes_analyzer(routes_list, user_route)
@@ -27,7 +28,11 @@ def test_1():
     metrics = analyzer.compute_metrics()
 
     assert len(metrics) > 0
-    assert metrics[0]["user_coordinates_matched"] == 3
+    print(metrics[0]["percentage_user"])
+    print(metrics[0]["number_user_coordinates"])
+    print(metrics[0]["percentage_poly"])
+    print(metrics[0]["number_polygons"])
+    assert metrics[0]["number_user_coordinates"] == 3
 
 
 def create_route():
