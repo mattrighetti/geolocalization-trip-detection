@@ -22,7 +22,7 @@ class stops(object):
 
     def __init__(self):
         current_dir = pathlib.Path(__file__).parent.parent
-        routes_file = current_dir.joinpath("data/bus stops.geojson")
+        routes_file = current_dir.joinpath("data/bus_stops.geojson")
         dfs = gpd.read_file(routes_file)
         points = dfs.geometry
         x_coo = [point.x for point in points]
@@ -45,7 +45,7 @@ class stops(object):
                 result.append(new_record)
         return result
 
-    def find_bus_stops_close_to(self, p: Point, radius=0.001):
+    def find_bus_stops_close_to(self, p: Point, radius=0.0003080999999998113):
         from_x = p.x - radius
         from_y = p.y - radius
         to_x = p.x + radius

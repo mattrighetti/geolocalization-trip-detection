@@ -74,28 +74,24 @@ def detect_vehicle_and_km(user_route: list):
     # STEP 2
     # Find bus stops near I. Do the same for E
     stops_object = stops()
-    Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=5e-3)
-    Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=5e-3)
-
+    offset_square = 0.00031
+    Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=offset_square)
+    Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=offset_square)
+    
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
-    print("ILIST")
-    print(Ilist)
-    print("FLIST")
-    print(Flist)
+
     # STEP 4
     # Create a list of bus routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist)
     sliced_routes = linestring_selector.get_sliced_routes()
-    print("SLICED ROUTES")
-    print(sliced_routes)
+
     # STEP 5
     # For every route in bus_route compute its metrics.
-    analyer = routes_analyzer(sliced_routes, user_route)
-    route_dictionaries = analyer.compute_metrics()
-    print("ROUTE_DICT")
-    print(route_dictionaries)
+    analyzer = routes_analyzer(sliced_routes, user_route)
+    route_dictionaries = analyzer.compute_metrics()
+
     # STEP 6
     # Search the dictionary with the maximum metrics
     evaluator = metrics_evaluator(route_dictionaries)
@@ -121,8 +117,11 @@ def compute_kilometers(route: list):
     route_length = len(route)
 
     for point in range(route_length - 1):
+        print(type(route[point]))
         p1 = route[point]
         p2 = route[point + 1]
+        p1 = (p1.y,p1.x)
+        p2 = (p2.y, p2.x)
         total_km += distance.geodesic(p1, p2, ellipsoid='Intl 1924').km
     
     return total_km
