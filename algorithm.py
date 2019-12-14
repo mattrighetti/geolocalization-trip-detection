@@ -77,7 +77,7 @@ if __name__ == '__main__':
         'transportation' : None,
         'start_time' : None,
         'end_time' : None
-        }
+    }
 
     # STEP 1
     # Retrieving initial and finhsing Point of user's trip
