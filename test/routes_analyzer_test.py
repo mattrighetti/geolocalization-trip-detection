@@ -1,4 +1,4 @@
-from routes_analyzer import routes_analyzer
+from Utils.routes_analyzer import routes_analyzer
 import geopandas as gpd
 from shapely.geometry import Point
 

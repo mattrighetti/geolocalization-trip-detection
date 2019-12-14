@@ -8,7 +8,7 @@ from shapely.geometry import LineString, Point
 class LinestringSelector(object):
 
     def __init__(self, Istops, Fstops):
-        self.data = gpd.read_file("../data/bus routes.geojson")
+        self.data = gpd.read_file("./data/bus routes.geojson")
         self.SlicedLineStringList = []
         self.Istops = Istops
         self.Fstops = Fstops
@@ -20,14 +20,13 @@ class LinestringSelector(object):
 
         start_final_points_array = []
 
-        for initial_stop in self.Istops:
+        for index, initial_stop in self.Istops.iterrows():
             initial_point = initial_stop['point']
             bus_id = initial_stop['bus_id']
 
             relevant_final_points = self.Fstops['bus_id'] == bus_id
             final_stops = self.Fstops[relevant_final_points]
-
-            for final_stop in final_stops:
+            for index, final_stop in final_stops.iterrows():
                 final_point = final_stop['point']
                 points_tuple = (bus_id, initial_point, final_point)
                 start_final_points_array.append(points_tuple)
