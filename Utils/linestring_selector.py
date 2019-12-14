@@ -20,13 +20,14 @@ class LinestringSelector(object):
 
         start_final_points_array = []
 
-        for index, initial_stop in self.Istops.iterrows():
+        for _ , initial_stop in self.Istops.iterrows():
             initial_point = initial_stop['point']
             bus_id = initial_stop['bus_id']
 
-            relevant_final_points = self.Fstops['bus_id'] == bus_id
+            relevant_final_points = np.array(self.Fstops['bus_id'] == str(bus_id))
             final_stops = self.Fstops[relevant_final_points]
-            for index, final_stop in final_stops.iterrows():
+
+            for _ , final_stop in final_stops.iterrows():
                 final_point = final_stop['point']
                 points_tuple = (bus_id, initial_point, final_point)
                 start_final_points_array.append(points_tuple)
@@ -43,6 +44,8 @@ class LinestringSelector(object):
         # Get all tuples to analyse
         tuples_array = self._preprocess_data()
 
+        print("tuples array " + str(len(tuples_array)))
+
         # For each tuple:
         for bus_start_stop_tuple in tuples_array:
             # Pick all the dataframe rows of that bus line
@@ -58,6 +61,7 @@ class LinestringSelector(object):
 
                 sliced_linestrings_array.append(sliced_linestring)
 
+        print("Sliced linstestrings array " + str(len(sliced_linestrings_array)))
         return sliced_linestrings_array
 
 

@@ -7,3 +7,4 @@ shapely==1.6.4
 haversine==2.1.2
 geopy==1.20.0
 pytest==5.3.1
+pathlib

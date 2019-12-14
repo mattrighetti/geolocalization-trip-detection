@@ -1,4 +1,6 @@
 import geopandas as gpd
+import os
+import pathlib
 from shapely.geometry import Point
 
 
@@ -19,8 +21,9 @@ def intercept(Ilist: list, Flist: list):
 class stops(object):
 
     def __init__(self):
-        stops = "./data/bus stops.geojson"
-        dfs = gpd.read_file(stops)
+        current_dir = pathlib.Path(__file__).parent.parent
+        routes_file = current_dir.joinpath("data/bus stops.geojson")
+        dfs = gpd.read_file(routes_file)
         points = dfs.geometry
         x_coo = [point.x for point in points]
         y_coo = [point.y for point in points]
