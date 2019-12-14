@@ -3,49 +3,35 @@ from Utils.metrics_evaluator import metrics_evaluator
 # Test the selection method on the first metric
 def test_percentage_user():
     route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
-    route_list = []
-    route_list.append(route_a)
-    route_list.append(route_b)
+    route_list = [route_a, route_b]
     evaluator = metrics_evaluator(route_list)
     assert evaluator.evaluate() == route_a
 
 # Test the selection method on the second metric
 def test_number_user_coordinates():
     route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
-    route_list = []
-    route_list.append(route_c)
-    route_list.append(route_b)
+    route_list = [route_c, route_b]
     evaluator = metrics_evaluator(route_list)
     assert evaluator.evaluate() == route_b
 
 # Test the selection method on the third metric
 def test_percentage_poly():
     route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
-    route_list = []
-    route_list.append(route_d)
-    route_list.append(route_b)
+    route_list = [route_d, route_b]
     evaluator = metrics_evaluator(route_list)
     assert evaluator.evaluate() == route_d
 
 # Test the selection method on the fourth metric
 def test_number_polygons():
     route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
-    route_list = []
-    route_list.append(route_d)
-    route_list.append(route_e)
+    route_list = [route_d, route_e]
     evaluator = metrics_evaluator(route_list)
     assert evaluator.evaluate() == route_e
 
 # Test with all the routes. the function returns only the first of the two optimal dictionaries (c nad f)
 def test_all():
     route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
-    route_list = []
-    route_list.append(route_a)
-    route_list.append(route_b)
-    route_list.append(route_c)
-    route_list.append(route_d)
-    route_list.append(route_e)
-    route_list.append(route_f)
+    route_list = [route_a, route_b, route_c, route_d, route_e, route_f]
     evaluator = metrics_evaluator(route_list)
     assert evaluator.evaluate() == route_c
 
