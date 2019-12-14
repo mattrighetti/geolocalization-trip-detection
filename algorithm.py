@@ -66,6 +66,17 @@ from Utils.metrics_evaluator import metrics_evaluator
 
 
 def detect_vehicle_and_km(user_route: list):
+    
+    # STEP 0
+    # Parse the GeoJSON.
+    user_data = {
+        'user_id' : user_id,
+        'ticket_id' : ticket_id,
+        'km_travelled' : None,
+        'transportation' : None,
+        'start_time' : None,
+        'end_time' : None
+    }
 
     # STEP 1
     # Retrieving initial and finhsing Point of user's trip
