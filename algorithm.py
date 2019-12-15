@@ -127,6 +127,28 @@ def compute_kilometers(route: list):
     return total_km
 
 
+def elaborate_request(self, user_id, ticket_id, start_time, end_time, data):
+    # STEP 0
+    # Parse the GeoJSON.
+    user_data = {
+        'user_id' : user_id,
+        'ticket_id' : ticket_id,
+        'km_travelled' : None,
+        'transportation' : None,
+        'start_time' : start_time,
+        'end_time' : end_time
+        }
+
+    # STEP 1-7
+    vehicle, km_travelled = detect_vehicle_and_km(data)
+
+    user_data['km_travelled'] = km_travelled
+    user_data['transportation'] = vehicle
+    
+    # STEP 8
+    # Save the data in the database
+    database_manager.save_to_database_dict(user_data)
+
 
 if __name__ == "__main__":
     # TODO this should be created once and kept up and running
