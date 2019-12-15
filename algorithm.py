@@ -127,7 +127,7 @@ def compute_kilometers(route: list):
     return total_km
 
 
-def elaborate_request(self, user_id, ticket_id, start_time, end_time, data):
+def elaborate_request(user_id, ticket_id, start_time, end_time, data):
     # STEP 0
     # Parse the GeoJSON.
     user_data = {
