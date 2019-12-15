@@ -1,4 +1,4 @@
-FROM python:3.6.9-alpine3.9
+FROM python:3.6.9-stretch
 
 COPY ./requirements.txt /app/requirements.txt
 
