@@ -21,7 +21,7 @@ def ready():
 def healtz():
     return 'healtz'
 
-@app.route('/<string:user_id>/<string:ticket_id>/data', methods=['POST'])
+@app.route('/<int:user_id>/<int:ticket_id>/data')
 def data(user_id, ticket_id):
 
     assert request.method == 'POST'
@@ -30,15 +30,15 @@ def data(user_id, ticket_id):
     data = req['data']
     start_time = req['start_time']
     end_time = req['end_time']
-    if (not start_time):
-        return ('start_time missing', 500)
-    if (not end_time):
-        return ('end_time missing', 500)
-    if (not data):
-        return ('Data missing', 500)
+    if not start_time:
+        return 'start_time missing', 500
+    if not end_time:
+        return 'end_time missing', 500
+    if not data:
+        return 'Data missing', 500
     point_list = parseGeoJSON(data)
     #elaborate_request(user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time, data=point_list)
     return 'Data retrieved'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.environ['HTTP_PORT'], debug=True)
+    app.run(host='0.0.0.0', debug=True)
