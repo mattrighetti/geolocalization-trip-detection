@@ -51,7 +51,7 @@ class MongoDBManager(object):
     def save_to_database_dict(self, data_dict):
         """
         This method will let users save a dictionary without providing every single argument as a function arg
-        param data_dict: dictionary of user data to be saved
+        @param data_dict: dictionary of user data to be saved
         @param data_dict:
         """
         necessary_data = ('user_id', 'ticket_id', 'transportation', 'start_time', 'end_time')

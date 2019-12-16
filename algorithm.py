@@ -149,8 +149,8 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data):
 
     # STEP 8
     # Save the data in the database
-    # database_manager = MongoDBManager()
-    # database_manager.save_to_database_dict(user_data)
+    database_manager = MongoDBManager()
+    database_manager.save_to_database_dict(user_data)
 
 
 if __name__ == "__main__":
