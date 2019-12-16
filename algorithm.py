@@ -144,10 +144,13 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data):
 
     user_data['km_travelled'] = km_travelled
     user_data['transportation'] = vehicle
-    
+
+    print(user_data)
+
     # STEP 8
     # Save the data in the database
-    database_manager.save_to_database_dict(user_data)
+    # database_manager = MongoDBManager()
+    # database_manager.save_to_database_dict(user_data)
 
 
 if __name__ == "__main__":
