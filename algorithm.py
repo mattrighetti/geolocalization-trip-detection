@@ -74,7 +74,7 @@ def detect_vehicle_and_km(user_route: list):
     # STEP 2
     # Find bus stops near I. Do the same for E
     stops_object = stops()
-    offset_square = 0.00031
+    offset_square = 0.001
     Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=offset_square)
     Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=offset_square)
     
@@ -149,8 +149,10 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data):
 
     # STEP 8
     # Save the data in the database
-    database_manager = MongoDBManager()
-    database_manager.save_to_database_dict(user_data)
+    # database_manager = MongoDBManager()
+    # database_manager.save_to_database_dict(user_data)
+
+    return user_data
 
 
 if __name__ == "__main__":

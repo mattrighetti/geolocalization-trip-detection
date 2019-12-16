@@ -2,6 +2,8 @@ import json
 
 from flask import Flask
 from flask import request
+from shapely.geometry import Point
+
 from Utils.parseGeoJSON import parseGeoJSON
 from algorithm import elaborate_request
 import os
@@ -40,19 +42,10 @@ def data(user_id, ticket_id):
         return 'end_time missing', 500
     if not data:
         return 'Data missing', 500
-    print(geojson)
-    print()
-    random_filename = "wow.geojson"
-    file = open(random_filename, "w+")
-    file.write(str(geojson).replace("'", "\""))
-    file.close()
-    geodataframe = gpd.read_file(random_filename)
-
-    print(geodataframe.head())
+    user_route = [Point(y,x) for x, y in [(loc['location']['latitude'], loc['location']['longitude']) for loc in req['data']['snappedPoints']]]
     x = elaborate_request(user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time,
-                          data=geodataframe['geometry'])
-    print(x)
-    return 'Data retrieved'
+                          data=user_route)
+    return x
 
 
 if __name__ == '__main__':
