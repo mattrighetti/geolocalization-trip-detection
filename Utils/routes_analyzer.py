@@ -51,8 +51,12 @@ class routes_analyzer(object):
                     if poly not in polygons_matched:
                         polygons_matched.append(poly)
 
-        user_metric = len(user_coordinates_matched) / len(self.user_route)
-        poly_metric = len(polygons_matched) / len(bus_route_polygons)
+        user_metric = 0
+        if len(bus_route_polygons) > 0:
+            user_metric = len(user_coordinates_matched) / len(self.user_route)
+        poly_metric = 0
+        if len(bus_route_polygons) > 0:
+            poly_metric = len(polygons_matched) / len(bus_route_polygons)
 
         result_dict = { 
                     "route" : bus_route, 
