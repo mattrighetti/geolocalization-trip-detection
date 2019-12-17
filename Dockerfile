@@ -8,10 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-ENV PYTHONPATH="."
-
-RUN pytest
-
-ENTRYPOINT [ "python" ]
-
-CMD [ "app.py" ]
+CMD export PYTHONPATH="$PWD" && pytest && python app.py
