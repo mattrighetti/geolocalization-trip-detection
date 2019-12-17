@@ -13,17 +13,12 @@ stages:
   variables:
     REMOTE_IMAGE_NAME: /${IMAGE_NAME}
 
-test:
+pytest:
   stage: test
   script:
-  - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} pytest
-
-test:
-  stage: test
-  script:
-  - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
-  - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} -name ${CONTAINER_NAME}
+  - apt install pytest -y
+  - export PYTHONPATH="$PWD"
+  - pytest
   
 
 
