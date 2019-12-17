@@ -12,13 +12,6 @@ stages:
 
   variables:
     REMOTE_IMAGE_NAME: /${IMAGE_NAME}
-
-pytest:
-  stage: test
-  script:
-  - apt-get install pytest -y
-  - export PYTHONPATH="$PWD"
-  - pytest
   
 
 
