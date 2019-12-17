@@ -16,7 +16,7 @@ stages:
 pytest:
   stage: test
   script:
-  - apt install pytest -y
+  - apt-get install pytest -y
   - export PYTHONPATH="$PWD"
   - pytest
   
