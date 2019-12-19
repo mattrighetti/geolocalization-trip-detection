@@ -10,16 +10,34 @@ class routes_analyzer(object):
     def compute_metrics(self):
         dictionaries = []
 
+        self.check_input_corretness()
+
         for route in self.bus_routes:
 
-            # TODO can we do it before?
+            # Remove duplicate points from the list
             route = self._remove_duplicates(route)
 
+            # Compute metrics for each bus route
             result_dict = self._compute_route_metrics(route)
             dictionaries.append(result_dict)
 
         return dictionaries
 
+    # Check if all the data structures are the one expected by the class
+    def check_input_corretness(self):
+        # Check that the bus routes list is not empty
+        if (len(self.bus_routes) == 0):
+            raise Exception("Bus routes is empty")
+        
+        # Check that bus routes is a list
+        if (not isinstance(self.bus_routes, list)):
+            raise Exception("Bus routes is not a list but " + str(type(self.bus_routes)))
+
+        # Check that the list contains Point
+        if (not isinstance(self.bus_routes[0][0], Point)):
+            raise Exception("Bus routes does not contain Points but " + str(type(self.bus_routes[0])))
+
+    # Given a list of Point representing the bus route return a list of Polygon 
     def _create_polygons(self, bus_route: list):
         polygons = []
 
@@ -43,17 +61,24 @@ class routes_analyzer(object):
         user_coordinates_matched = []
         polygons_matched = []
 
+        # For every Point in the user route
         for point in self.user_route:
+            # For every Polygon in the bus route
             for poly in bus_route_polygons:
+                # If the Polygon contanins the Point
                 if poly.contains(point):
+                    # If the Point and the Polygon are not already matched add them to their data structure 
                     if point not in user_coordinates_matched:
                         user_coordinates_matched.append(point)
                     if poly not in polygons_matched:
                         polygons_matched.append(poly)
 
+        # Compute the metrics
+        
         user_metric = 0
         if len(bus_route_polygons) > 0:
             user_metric = len(user_coordinates_matched) / len(self.user_route)
+        
         poly_metric = 0
         if len(bus_route_polygons) > 0:
             poly_metric = len(polygons_matched) / len(bus_route_polygons)
@@ -89,6 +114,7 @@ class routes_analyzer(object):
         dx = offset_x * cosine
         dy = offset_y * sine
 
+        # Avoid Polygon dimension from being too small
         if dx < offset_small_x:
             dx = offset_small_x
         if dy < offset_small_y:

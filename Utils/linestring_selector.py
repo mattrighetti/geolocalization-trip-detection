@@ -1,8 +1,8 @@
-import numpy as np
-import geopandas as gpd
 from shapely.geometry import LineString, Point
-import os
+import geopandas as gpd
+import numpy as np
 import pathlib
+import os
 
 # INPUT
 # List of NP.ARRAYs with data
@@ -10,6 +10,11 @@ import pathlib
 class LinestringSelector(object):
 
     def __init__(self, Istops, Fstops):
+
+        # Check if data is correct
+        self.check_data(Istops, Fstops)
+
+        # Read bus routes
         current_dir = pathlib.Path(__file__).parent.parent
         routes_file = current_dir.joinpath("data/bus_routes.geojson")
         self.data = gpd.read_file(routes_file)
@@ -17,9 +22,29 @@ class LinestringSelector(object):
         self.Istops = Istops
         self.Fstops = Fstops
 
+    def check_data(self, Istops, Fstops):
+        """
+        Checks if data is correct
+
+        @param Istops: list of Point
+        @param Fstops: list of Point
+        @return: None
+        """
+
+        # If not iterable it will throw an Exception saying that Istops or Fstops doesn't have len()
+        Istops_len = len(Istops)
+        Fstops_len = len(Fstops)
+
+        # If Istops or Fstops is empty, throw an exception
+        if Istops_len == 0 | Fstops_len == 0:
+            raise Exception("Istops is empty.")
+
+
     def _preprocess_data(self):
         """
-        Creates tuples of type (bus_id, starting_point, ending_point)
+        Creates list tuples of type (bus_id, starting_point, ending_point)
+
+        @return: list of tuples
         """
 
         start_final_points_array = []
@@ -39,6 +64,12 @@ class LinestringSelector(object):
         return start_final_points_array
 
     def to_list_of_points(self, linestrings_array):
+        """
+        Converts bus route LineString to a list of Points
+
+        @param linestrings_array: LineString object
+        @return: list of Points
+        """
         bus_lines = []
         route_points = []
 
@@ -56,18 +87,17 @@ class LinestringSelector(object):
 
     def get_sliced_routes(self):
         """
-        Returns an array of type [ (bus_id, sliced_linestring), ... ]
+        Creates and returns a list of sliced_linestring with its associate bus_id
+
+        sliced_linestring is a linestring constructed from the original bus routed removing the part not travelled by the user
+
+        @return: array of type [ (bus_id, sliced_linestring), ... ]
         """
 
         sliced_linestrings_array = []
 
         # Get all tuples to analyse
         tuples_array = self._preprocess_data()
-
-        print("tuples array " + str(len(tuples_array)))
-        for tuple_s in tuples_array:
-            print(tuple_s)
-        print("------------------------------------------------------------------------")
 
         # For each tuple:
         for bus_start_stop_tuple in tuples_array:
@@ -89,7 +119,10 @@ class LinestringSelector(object):
 
     def _convert_to_multilinestring(self, linestring):
         """
-        Creates a collection of LineStrings that compose the original LineString
+        Creates a collection of LineStrings that compose the original LineString and returns it.
+
+        @param linestring: LineString object
+        @return: collection of LineString that linestring is composed of
         """
 
         linestring_array = []
@@ -108,7 +141,12 @@ class LinestringSelector(object):
 
     def _get_sliced_multi_linestring(self, linestring, starting_point, finishing_point):
         """
-        Created and returns the sliced LineString
+        Created and returns the sliced Multi-LineString
+
+        @param linestring: LineString object
+        @param starting_point: Point object that indicates where the user started his/her trip
+        @param finishing_point: Point object that indicates where the user finished his/her trip
+        @return: returns the original multi_linestring without the LineStrings not travelled by the user
         """
 
         # Convert original LineString to MultiLineString
@@ -137,6 +175,9 @@ class LinestringSelector(object):
     def _convert_to_linestring(self, multi_linestring):
         """
         Creates LineString from multiple LineStrings
+
+        @param multi_linestring: Collection of LineString object
+        @return: LineString object created by joining a collection of multi_linestring into a single one
         """
 
         return LineString(multi_linestring)
@@ -149,6 +190,10 @@ class LinestringSelector(object):
         stop, which, depending if it's a final bus stop or the initial one, will be
         used to slice the multi_linestring arraty in order to get only the relevant
         portion of the original LineString
+
+        @param multi_linestring: Collection of LineString object
+        @param point: Point object
+        @return: nearest LineString index in a LineString collection to point
         """
 
         distances = []
@@ -160,6 +205,12 @@ class LinestringSelector(object):
         return distances.index(min(distances))
    
     def _remove_duplicates(self, points: list):
+        """
+        Removed duplicate points in a list
+
+        @param points: list of Points objects
+        @return: List of unique Point objects
+        """
         unique_list = []
 
         for point in points:

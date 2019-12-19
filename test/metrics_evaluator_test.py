@@ -1,4 +1,34 @@
 from Utils.metrics_evaluator import metrics_evaluator
+import pytest
+from shapely.geometry import Point
+import numpy as np
+
+
+#Test that an Exception is raised when the routes_dictionaries list is empty
+def test_routes_dictionaries_emptiness():
+    route_list = []
+
+    evaluator = metrics_evaluator(route_list)
+    with pytest.raises(Exception):
+        assert evaluator.evaluate()
+
+#Test that an Exception is raised when the routes_dictionaries is not a list
+def test_routes_dictionaries_list_mismatch():
+    route_a, route_b, route_c, route_d, route_e, route_f = create_routes()
+
+    routes_list = np.array(route_a)
+
+    evaluator = metrics_evaluator(routes_list)
+    with pytest.raises(Exception):
+        assert evaluator.evaluate()
+
+#Test that an Exception is raised when the list in routes_dictionaries does not contain dictionaries
+def test_routes_dictionaries_type_mismatch():
+    route_list = [1,2,4]
+
+    evaluator = metrics_evaluator(route_list)
+    with pytest.raises(Exception):
+        assert evaluator.evaluate()
 
 # Test the selection method on the first metric
 def test_percentage_user():

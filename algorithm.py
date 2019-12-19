@@ -4,6 +4,7 @@ from Utils.stops import stops, intercept
 from Utils.linestring_selector import LinestringSelector
 from Utils.routes_analyzer import routes_analyzer
 from Utils.metrics_evaluator import metrics_evaluator
+from Utils.NetworkManager import send_data
 
 
 
@@ -117,7 +118,6 @@ def compute_kilometers(route: list):
     route_length = len(route)
 
     for point in range(route_length - 1):
-        print(type(route[point]))
         p1 = route[point]
         p2 = route[point + 1]
         p1 = (p1.y,p1.x)
@@ -140,6 +140,8 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data):
         }
 
     # STEP 1-7
+        
+    
     vehicle, km_travelled = detect_vehicle_and_km(data)
 
     user_data['km_travelled'] = km_travelled
@@ -153,26 +155,3 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data):
     # database_manager.save_to_database_dict(user_data)
 
     return user_data
-
-
-if __name__ == "__main__":
-    # TODO this should be created once and kept up and running
-    database_manager = MongoDBManager()
-
-    # STEP 0
-    # Parse the GeoJSON.
-    user_data = {
-        'user_id' : user_id,
-        'ticket_id' : ticket_id,
-        'km_travelled' : None,
-        'transportation' : None,
-        'start_time' : None,
-        'end_time' : None
-        }
-    
-    # STEP 1-7
-    vehicle, km_travelled = detect_vehicle_and_km(user_route)
-
-    # STEP 8
-    # Save the data in the database
-    database_manager.save_to_database_dict(user_data)
