@@ -1,4 +1,4 @@
-image: python:3.8.0
+image: python:3.8.0-alpine3.10
 
 variables:
   GIT_DEPTH: 1
@@ -13,6 +13,7 @@ pytest:
   stage: test
   script: 
     - pip install pytest
+    - export PYTHONPATH="$PWD"
     - pytest
 
 
