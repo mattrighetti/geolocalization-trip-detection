@@ -5,3 +5,5 @@
 /.vscode/*
 venv/*
 venv
+__init__.pyc
+.cache/
