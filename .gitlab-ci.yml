@@ -23,6 +23,8 @@ pytest:
   variables:
     REMOTE_IMAGE_NAME: /${IMAGE_NAME}
   
+  before_script:
+    - docker login -u ${DOCKER_USER} -p ${DOCKER_TOKEN}
 
 
 docker-build-branches:
@@ -31,8 +33,9 @@ docker-build-branches:
   <<: *docker_job
 
   script:
-    - docker pull ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - docker build --build-arg COMMIT_SHA=${CI_COMMIT_SHA} --pull -t ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} .
     - docker run --rm -d ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - docker push ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
 
   only:
     - branches
@@ -47,8 +50,16 @@ docker-build-latest:
   <<: *docker_job
 
   script:
-    - docker pull ${IMAGE_NAME}:latest
+    - docker build --build-arg COMMIT_SHA=${CI_COMMIT_SHA} --pull -t ${IMAGE_NAME} .
     - docker run --rm -d ${IMAGE_NAME}
+    - docker push ${IMAGE_NAME}
+    - docker save ${IMAGE_NAME}:latest -o latest.tar.gz
+
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - latest.tar.gz
 
 
   only:
