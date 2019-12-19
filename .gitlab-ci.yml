@@ -1,3 +1,5 @@
+image: 3.8.0-alpine3.10
+
 variables:
   GIT_DEPTH: 1
   IMAGE_NAME: lucaferrera/flask-geolocalization
@@ -6,6 +8,13 @@ variables:
 stages:
   - test
   - package
+
+pytest:
+  stage: test
+  script: 
+    - pip install pytest
+    - pytest
+
 
 .docker-job: &docker_job
   image: docker:latest
