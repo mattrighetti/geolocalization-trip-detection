@@ -163,7 +163,7 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data, app=None):
     # STEP 1-7
         
     
-    vehicle, km_travelled = detect_vehicle_and_km(data=data, app=app)
+    vehicle, km_travelled = detect_vehicle_and_km(user_route=data, app=app)
 
     user_data['km_travelled'] = km_travelled
     user_data['transportation'] = vehicle
