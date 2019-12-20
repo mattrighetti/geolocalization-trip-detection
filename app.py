@@ -45,14 +45,16 @@ def data(user_id, ticket_id):
         if not data:
             return 'Data missing', 500
         user_route = [Point(y,x) for x, y in [(loc['location']['latitude'], loc['location']['longitude']) for loc in req['data']['snappedPoints']]]
-        result = elaborate_request(user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time,
+        result = elaborate_request(app=app ,user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time,
                               data=user_route)
         # Send the result of the algorithm to the Java Backend
         send_data(result)
+        app.logger.info("SUCCESS - km_travelled: %f \tvehicle: %s ", result['km_travelled'], result['transportation'])
         return result, 200
     except Exception as message:
         # TODO Don't return 200 but another status code
-        return "Something went wrong " + str(message), 200
+        app.logger.info("Something went wrong: %s", message)
+        return "Something went wrong: " + str(message), 200
     
 
 if __name__ == '__main__':
