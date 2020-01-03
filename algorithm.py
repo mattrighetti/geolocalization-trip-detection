@@ -64,21 +64,14 @@ from Utils.NetworkManager import send_data
 # Step 8 Save the data in the database
 #       Input: user_id, ticket_id, km_travelled
 
-
-
-def detect_vehicle_and_km(user_route: list):
-
-    # STEP 1
-    # Retrieving initial and finhsing Point of user's trip
-    initial_point, finishing_point = find_points(user_route)
-
+def get_bus_routes(initial_point, finishing_point):
     # STEP 2
-    # Find bus stops near I. Do the same for E
-    stops_object = stops()
+    # Find bus stops near I. Do the same for F
+    stops_object = stops(type_of_dataset="BUS")
     offset_square = 0.001
-    Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=offset_square)
-    Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=offset_square)
-    
+    Ilist = stops_object.find_stops_close_to(initial_point, radius=offset_square)
+    Flist = stops_object.find_stops_close_to(finishing_point, radius=offset_square)
+
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
@@ -87,6 +80,55 @@ def detect_vehicle_and_km(user_route: list):
     # Create a list of bus routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist)
     sliced_routes = linestring_selector.get_sliced_routes()
+    return sliced_routes
+
+def get_train_routes(initial_point, finishing_point):
+    # STEP 2
+    # Find bus stops near I. Do the same for F
+    stops_object = stops(type_of_dataset="TRAIN")
+    offset_square = 0.001
+    Ilist = stops_object.find_stops_close_to(initial_point, radius=offset_square)
+    Flist = stops_object.find_stops_close_to(finishing_point, radius=offset_square)
+
+    # STEP 3
+    # Do the intersection in order to find the bus lines in common
+    Ilist, Flist = intercept(Ilist, Flist)
+
+    # STEP 4
+    # Create a list of bus routes that have a starting point in Ilist and an end in Flist
+    linestring_selector = LinestringSelector(Ilist, Flist)
+    sliced_routes = linestring_selector.get_sliced_routes()
+    return sliced_routes
+
+def detect_vehicle_and_km(user_route: list):
+
+    # STEP 1
+    # Retrieving initial and finhsing Point of user's trip
+    initial_point, finishing_point = find_points(user_route)
+
+    # STEP 2-4 for buses
+    sliced_routes_bus = get_bus_routes(initial_point, finishing_point)
+    sliced_routes_bus = [(x, 'BUS') for x in sliced_routes_bus]
+    # STEP 2-4 for trains
+    sliced_routes_train = get_train_routes(initial_point, finishing_point)
+    sliced_routes_train = [(x, 'TRAIN') for x in sliced_routes_train]
+    sliced_routes = sliced_routes_bus + sliced_routes_train
+
+    # # STEP 2
+    # # Find bus stops near I. Do the same for E
+    # stops_object = stops()
+    # offset_square = 0.001
+    # Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=offset_square)
+    # Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=offset_square)
+    #
+    # # STEP 3
+    # # Do the intersection in order to find the bus lines in common
+    # Ilist, Flist = intercept(Ilist, Flist)
+    #
+    # # STEP 4
+    # # Create a list of bus routes that have a starting point in Ilist and an end in Flist
+    # linestring_selector = LinestringSelector(Ilist, Flist)
+    # sliced_routes = linestring_selector.get_sliced_routes()
 
     # STEP 5
     # For every route in bus_route compute its metrics.

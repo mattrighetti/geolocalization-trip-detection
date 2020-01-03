@@ -24,7 +24,7 @@ def test_find_bus_stops_close_to_Duomo():
     y = 45.46427
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to the Duomo
     assert len(closest_stops) > 0
@@ -47,7 +47,7 @@ def test_find_bus_stops_close_to_Porta_Genova():
     y = 45.456665
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to Porta Genova
     assert len(closest_stops) > 0
@@ -69,7 +69,7 @@ def test_find_bus_stops_close_to_Politecnico():
     y = 45.478657
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to Politecnico
     assert len(closest_stops) > 0
@@ -98,8 +98,8 @@ def test_intercept_from_Duomo_to_Politecnico():
     politecnico_y = 45.478657
     politecnico_coordinate = Point(politecnico_x, politecnico_y)
     radius = 0.0015
-    duomo_stops = stops().find_bus_stops_close_to(duomo_coordinate, radius)
-    polimi_stops = stops().find_bus_stops_close_to(politecnico_coordinate, radius)
+    duomo_stops = stops().find_stops_close_to(duomo_coordinate, radius)
+    polimi_stops = stops().find_stops_close_to(politecnico_coordinate, radius)
     relevant_duomo_stops, relevant_politecnico_stops = intercept(duomo_stops, polimi_stops)
 
     # Check the format of the output

@@ -3,24 +3,89 @@ import geopandas as gpd
 import numpy as np
 import pathlib
 import os
+import json
 
 # INPUT
 # List of NP.ARRAYs with data
 
 class LinestringSelector(object):
 
-    def __init__(self, Istops, Fstops):
+    def __init__(self, Istops, Fstops, type_of_dataset="BUS"):
 
         # Check if data is correct
         self.check_data(Istops, Fstops)
 
-        # Read bus routes
-        current_dir = pathlib.Path(__file__).parent.parent
-        routes_file = current_dir.joinpath("data/bus_routes.geojson")
-        self.data = gpd.read_file(routes_file)
+        if type_of_dataset is "BUS":
+            self.data = self._load_bus_data()
+        elif type_of_dataset is "TRAIN":
+            self.data = self._load_train_data()
+        else:
+            raise Exception("type of dataset should be BUS or TRAIN, other datasets are not implemented yet.")
         self.SlicedLineStringList = []
         self.Istops = Istops
         self.Fstops = Fstops
+
+    def _load_bus_data(self):
+        # Read bus routes
+        current_dir = pathlib.Path(__file__).parent.parent
+        routes_path = current_dir.joinpath("data/bus_data.geojson")
+        bus_file = open(routes_path)
+        data = json.load(bus_file)
+        relations = [feature for feature in data['features'] if 'relation' in feature['id']]
+
+        buses_and_routes = np.array(
+            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']])
+
+        # Casting multilinestring into linestring
+        for i in range(len(buses_and_routes)):
+            bus = buses_and_routes[i][0]
+            route = buses_and_routes[i][1]
+            if route['type'] == 'MultiLineString':
+                unique_linestring = []
+                for linestring in route['coordinates']:
+                    unique_linestring += linestring
+                buses_and_routes[i][1]['type'] = 'LineString'
+                buses_and_routes[i][1]['coordinates'] = unique_linestring
+
+        # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
+        buses_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in buses_and_routes])
+
+        data = gpd.GeoDataFrame()
+        data['linea'] = buses_and_linestrings[:, 0]
+        data['geometry'] = buses_and_linestrings[:, 1]
+        data['type'] = 'BUS'
+        return data
+
+    def _load_train_data(self):
+        # Read train routes
+        current_dir = pathlib.Path(__file__).parent.parent
+        routes_path = current_dir.joinpath("data/train_data.geojson")
+        train_file = open(routes_path)
+        data = json.load(train_file)
+        relations = [feature for feature in data['features'] if 'relation' in feature['id']]
+
+        trains_and_routes = np.array(
+            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']])
+
+        # Casting multilinestring into linestring
+        for i in range(len(trains_and_routes)):
+            train = trains_and_routes[i][0]
+            route = trains_and_routes[i][1]
+            if route['type'] == 'MultiLineString':
+                unique_linestring = []
+                for linestring in route['coordinates']:
+                    unique_linestring += linestring
+                trains_and_routes[i][1]['type'] = 'LineString'
+                trains_and_routes[i][1]['coordinates'] = unique_linestring
+
+        # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
+        trains_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in trains_and_routes])
+
+        data = gpd.GeoDataFrame()
+        data['linea'] = trains_and_linestrings[:, 0]
+        data['geometry'] = trains_and_linestrings[:, 1]
+        data['type'] = 'TRAIN'
+        return data
 
     def check_data(self, Istops, Fstops):
         """

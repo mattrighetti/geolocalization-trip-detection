@@ -63,6 +63,25 @@ class stops(object):
         dfs.sort_values(by=['x_coo', 'y_coo'], ascending=True, inplace=True)
         self.dataset = dfs
 
+    def __init__(self, type_of_dataset="BUS"):
+        if type_of_dataset is "BUS":
+            # Finding the path of the bus stops geoson
+            current_dir = pathlib.Path(__file__).parent.parent
+            routes_file = current_dir.joinpath("data/bus_stops.geojson")
+            # Load the file in memory
+            dfs = gpd.read_file(routes_file)
+            points = dfs.geometry
+            # Data cleaning and engineering
+            x_coo = [point.x for point in points]
+            y_coo = [point.y for point in points]
+            dfs.insert(1, "y_coo", y_coo, True)
+            dfs.insert(1, "x_coo", x_coo, True)
+            dfs.sort_values(by=['x_coo', 'y_coo'], ascending=True, inplace=True)
+            self.dataset = dfs
+        elif type_of_dataset is "TRAIN":
+        else:
+            raise Exception("type of dataset should be BUS or TRAIN, other datasets are not implemented yet.")
+
     # Search the stops from between a square [x0, x1, y0, y1]
     # It raises exception if the input are not well formatted
     def _search_indexes(self, from_x=0, to_x=0, from_y=0, to_y=0):
@@ -86,7 +105,7 @@ class stops(object):
 
     # Find the bus stops close to this point with exponential backoff policy
     # The exponential backoff is used in order to find a minimum amount of stops
-    def find_bus_stops_close_to(self, p: Point, radius=0.0003080999999998113, minimum_amount_of_stops = 5):
+    def find_stops_close_to(self, p: Point, radius=0.0003080999999998113, minimum_amount_of_stops = 5):
         # Initialize the result to an empty list
         result = []
         while len(result) < 3:
