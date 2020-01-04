@@ -1,7 +1,9 @@
+import json
+
 import geopandas as gpd
 import pathlib
 from shapely.geometry import Point
-
+import numpy as np
 
 # Find the common bus lines among an Initial list of points and a Final list of points
 # The Initial list should contain at least one Point
@@ -14,8 +16,8 @@ def _find_common_bus_lines(Ilist: list, Flist: list):
     elif len(Flist) <= 0:
         raise Exception("Final list should contain at least a point")
     else:
-        starting_lines = [element[4] for element in Ilist]
-        ending_lines = [element[4] for element in Flist]
+        starting_lines = [element[0] for element in Ilist]
+        ending_lines = [element[0] for element in Flist]
         common_lines = [line for line in starting_lines if line in ending_lines]
         return common_lines
 
@@ -34,53 +36,46 @@ def intercept(Ilist: list, Flist: list):
         # Find the lines that are in both lists
         common_lines = _find_common_bus_lines(Ilist, Flist)
         # Find the common lines contained in the initial list
-        filtered_IList = [element for element in Ilist if element[4] in common_lines]
+        filtered_IList = [element for element in Ilist if element[0] in common_lines]
         # Find the common lines contained in the final list
-        filtered_FList = [element for element in Flist if element[4] in common_lines]
+        filtered_FList = [element for element in Flist if element[0] in common_lines]
         # Wrap them in a geopanda dataframe
-        result_IDataframe = gpd.GeoDataFrame(filtered_IList, columns=['id', 'x', 'y', 'location', 'bus_id', 'point'])
-        result_FDataframe = gpd.GeoDataFrame(filtered_FList, columns=['id', 'x', 'y', 'location', 'bus_id', 'point'])
+        result_IDataframe = gpd.GeoDataFrame(filtered_IList, columns=['bus_id', 'longitude', 'latitude'])
+        result_IDataframe['point'] = [Point(float(e[1]), float(e[2])) for e in filtered_IList]
+        result_FDataframe = gpd.GeoDataFrame(filtered_FList, columns=['bus_id', 'longitude', 'latitude'])
+        result_FDataframe['point'] = [Point(float(e[1]), float(e[2])) for e in filtered_FList]
         return result_IDataframe, result_FDataframe
 
 # Class that manages the stops
 class stops(object):
 
-    # Constructor
-    # Loads the stops data structure in memory
-    # Cleanse the input data
-    def __init__(self):
+    def __init__(self, type_of_dataset="BUS"):
         # Finding the path of the bus stops geoson
         current_dir = pathlib.Path(__file__).parent.parent
-        routes_file = current_dir.joinpath("data/bus_stops.geojson")
-        # Load the file in memory
-        dfs = gpd.read_file(routes_file)
-        points = dfs.geometry
-        # Data cleaning and engineering
-        x_coo = [point.x for point in points]
-        y_coo = [point.y for point in points]
-        dfs.insert(1, "y_coo", y_coo, True)
-        dfs.insert(1, "x_coo", x_coo, True)
-        dfs.sort_values(by=['x_coo', 'y_coo'], ascending=True, inplace=True)
-        self.dataset = dfs
-
-    def __init__(self, type_of_dataset="BUS"):
         if type_of_dataset is "BUS":
-            # Finding the path of the bus stops geoson
-            current_dir = pathlib.Path(__file__).parent.parent
-            routes_file = current_dir.joinpath("data/bus_stops.geojson")
-            # Load the file in memory
-            dfs = gpd.read_file(routes_file)
-            points = dfs.geometry
-            # Data cleaning and engineering
-            x_coo = [point.x for point in points]
-            y_coo = [point.y for point in points]
-            dfs.insert(1, "y_coo", y_coo, True)
-            dfs.insert(1, "x_coo", x_coo, True)
-            dfs.sort_values(by=['x_coo', 'y_coo'], ascending=True, inplace=True)
-            self.dataset = dfs
+            routes_file = current_dir.joinpath("data/bus_data.geojson")
         elif type_of_dataset is "TRAIN":
+            routes_file = current_dir.joinpath("data/train_data.geojson")
         else:
             raise Exception("type of dataset should be BUS or TRAIN, other datasets are not implemented yet.")
+        f = open(routes_file)
+        data = json.load(f)
+        nodes = [feature for feature in data['features'] if 'node' in feature['id']]
+        lines_and_stops = []
+        # For each node creates a tuple and append it to buses and stops
+        for node in nodes:
+            longitude = float(node['geometry']['coordinates'][0])
+            latitude = float(node['geometry']['coordinates'][1])
+            for line in node['properties']['@relations']:
+                if 'ref' in line['reltags']:
+                    lines_and_stops.append((line['reltags']['ref'], longitude, latitude))
+        lines_and_stops = np.array(lines_and_stops)
+        # Creating the geopanda dataframe
+        dataset = gpd.GeoDataFrame()
+        dataset['linea'] = lines_and_stops[:, 0]
+        dataset['longitude'] = lines_and_stops[:, 1]
+        dataset['latitude'] = lines_and_stops[:, 2]
+        self.dataset = dataset
 
     # Search the stops from between a square [x0, x1, y0, y1]
     # It raises exception if the input are not well formatted
@@ -90,17 +85,21 @@ class stops(object):
         elif from_y > to_y:
             raise Exception("From_y should be less than the to_y")
         else:
+            # # Computing the result
+            # # Start by computing a partial result
+            # partial_result = [record for record in self.dataset.values if
+            #                   from_x < record[1] < to_x and from_y < record[2] < to_y]
+            # result = []
+            # for record in partial_result:
+            #     bus_lines = record[4].split(',')
+            #     for bus_id in bus_lines:
+            #         new_record = record.copy()
+            #         new_record[4] = bus_id
+            #         result.append(new_record)
             # Computing the result
             # Start by computing a partial result
-            partial_result = [record for record in self.dataset.values if
-                              from_x < record[1] < to_x and from_y < record[2] < to_y]
-            result = []
-            for record in partial_result:
-                bus_lines = record[4].split(',')
-                for bus_id in bus_lines:
-                    new_record = record.copy()
-                    new_record[4] = bus_id
-                    result.append(new_record)
+            result = [record for record in self.dataset.values if
+                              from_x < float(record[1]) < to_x and from_y < float(record[2]) < to_y]
             return result
 
     # Find the bus stops close to this point with exponential backoff policy
@@ -118,3 +117,6 @@ class stops(object):
             # Exponential backoff policy
             radius = radius * 1.5
         return result
+
+if __name__ == '__main__':
+    s = stops()
