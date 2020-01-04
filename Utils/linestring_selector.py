@@ -34,7 +34,7 @@ class LinestringSelector(object):
         relations = [feature for feature in data['features'] if 'relation' in feature['id']]
 
         buses_and_routes = np.array(
-            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']])
+            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
 
         # Casting multilinestring into linestring
         for i in range(len(buses_and_routes)):
@@ -48,7 +48,7 @@ class LinestringSelector(object):
                 buses_and_routes[i][1]['coordinates'] = unique_linestring
 
         # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
-        buses_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in buses_and_routes])
+        buses_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in buses_and_routes], dtype=object)
 
         data = gpd.GeoDataFrame()
         data['linea'] = buses_and_linestrings[:, 0]
@@ -65,7 +65,7 @@ class LinestringSelector(object):
         relations = [feature for feature in data['features'] if 'relation' in feature['id']]
 
         trains_and_routes = np.array(
-            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']])
+            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
 
         # Casting multilinestring into linestring
         for i in range(len(trains_and_routes)):
@@ -79,7 +79,7 @@ class LinestringSelector(object):
                 trains_and_routes[i][1]['coordinates'] = unique_linestring
 
         # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
-        trains_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in trains_and_routes])
+        trains_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in trains_and_routes], dtype=object)
 
         data = gpd.GeoDataFrame()
         data['linea'] = trains_and_linestrings[:, 0]
@@ -167,7 +167,7 @@ class LinestringSelector(object):
         # For each tuple:
         for bus_start_stop_tuple in tuples_array:
             # Pick all the dataframe rows of that bus line
-            possible_linestrings = self.data['linea'] == int(bus_start_stop_tuple[0])
+            possible_linestrings = self.data['linea'] == bus_start_stop_tuple[0]
             selected_linestrings = self.data[possible_linestrings]
 
             # Foreach linestring:
