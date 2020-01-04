@@ -17,7 +17,7 @@ def test_1():
     metrics = analyzer.compute_metrics()
 
     assert len(metrics) > 0
-    assert metrics[0]["number_user_coordinates"] == 3
+    assert metrics[0]['number_user_coordinates'] == 3
 
 #Test that an Exception is raised when the bus_routes list is empty
 def test_bus_routes_emptiness():
@@ -79,4 +79,4 @@ def create_bus_route():
         p = Point(coordinate)
         bus_route.append(p)
     
-    return bus_route
+    return (bus_route, 'BUS')
