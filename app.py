@@ -5,6 +5,7 @@ from flask import request
 from shapely.geometry import Point
 
 from Utils.parseGeoJSON import parseGeoJSON
+from DataParser import DataParser
 from algorithm import elaborate_request
 import os
 import geopandas as gpd
@@ -44,9 +45,13 @@ def data(user_id, ticket_id):
             return 'end_time missing', 500
         if not data:
             return 'Data missing', 500
-        user_route = [Point(y,x) for x, y in [(loc['location']['latitude'], loc['location']['longitude']) for loc in req['data']['snappedPoints']]]
-        result = elaborate_request(user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time,
-                              data=user_route)
+        
+        user_route_dict = DataParser.parse(data)
+        raw_user_route = user_route_dict['raw']
+        snapped_user_route = user_route_dict['snapped']
+
+        result = elaborate_request(user_id=user_id, ticket_id=ticket_id, start_time=start_time, end_time=end_time, data=snapped_user_route)
+        
         # Send the result of the algorithm to the Java Backend
         send_data(result)
         return result, 200
