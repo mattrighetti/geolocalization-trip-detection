@@ -148,6 +148,9 @@ class LinestringSelector(object):
 
     def _load_train_data(self):
         # Read train routes
+        threshold_min_points = 35
+        threshold_min_distance = 1
+
         current_dir = pathlib.Path(__file__).parent.parent
         routes_path = current_dir.joinpath("data/train_data.geojson")
         train_file = open(routes_path)
@@ -155,22 +158,106 @@ class LinestringSelector(object):
         relations = [feature for feature in data['features'] if 'relation' in feature['id']]
 
         trains_and_routes = np.array(
-            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
+            [(x['properties']['name'], x['geometry']) for x in relations], dtype=object)
 
+        temp_trains_and_routes = []
         # Casting multilinestring into linestring
         for i in range(len(trains_and_routes)):
             train = trains_and_routes[i][0]
             route = trains_and_routes[i][1]
             if route['type'] == 'MultiLineString':
-                unique_linestring = []
-                for linestring in route['coordinates']:
-                    unique_linestring += linestring
-                trains_and_routes[i][1]['type'] = 'LineString'
-                trains_and_routes[i][1]['coordinates'] = unique_linestring
 
+                print(f"train is {train}")
+                r = []
+
+                # Step 1, retrieve the size of the linestrings
+                size_of_the_linestrings = np.array([len(line) for line in route['coordinates']])
+                print(size_of_the_linestrings)
+
+                # Step 2, delete the linestrings that have a size less than the threshold 'threshold_min_points'
+                filter_mask = size_of_the_linestrings > threshold_min_points
+                print(filter_mask)
+                filtered_linestrings = np.array([line for line in route['coordinates']])[filter_mask]
+
+                # Step 2.1, if all linestrings are deleted, do not add the train to the dataset
+                if len(filtered_linestrings) == 0:
+                    print(f'train line {train} has been discarded')
+                    continue
+
+                # Step 3, add the longest linestring to the route
+                size_of_the_filtered_linestrings = np.array([len(line) for line in filtered_linestrings])
+                max_size = max(size_of_the_filtered_linestrings)
+                filter_max_mask = size_of_the_filtered_linestrings == max_size
+                longest_linestring = filtered_linestrings[filter_max_mask][0]
+
+                # Removing the linestring from the ones which can choose
+                filtered_linestrings = list(filtered_linestrings)
+                filtered_linestrings.remove(longest_linestring)
+
+                r += longest_linestring
+                initial_point_of_r = r[0]
+                final_point_of_r = r[-1]
+
+                # Exit condition
+                while len(filtered_linestrings) != 0:
+                    distance_matrix = []
+                    # Step 4, compute the distance (head-tail, tail-head) from each linestring to the route
+                    for line in filtered_linestrings:
+                        # Compute distance from r-head
+                        p1 = line[-1]
+                        p2 = initial_point_of_r
+                        p1 = (p1[1], p1[0])
+                        p2 = (p2[1], p2[0])
+                        distance_from_head = distance.geodesic(p1, p2, ellipsoid='Intl 1924').km
+
+                        # Compute distance from r-tail
+                        p1 = line[0]
+                        p2 = final_point_of_r
+                        p1 = (p1[1], p1[0])
+                        p2 = (p2[1], p2[0])
+                        distance_from_tail = distance.geodesic(p1, p2, ellipsoid='Intl 1924').km
+
+                        distance_matrix += [(line, distance_from_head, distance_from_tail)]
+
+                    # Step 5, select the closest linestring to the route (if the distance is less than 'threshold_min_distance')
+
+                    # Searching for the line with min distance
+                    min_distance_line = None
+                    is_it_from_head = True
+                    min_distance = float('inf')
+                    for element in distance_matrix:
+                        line = element[0]
+                        distance_from_head = element[1]
+                        distance_from_tail = element[2]
+                        if min_distance > distance_from_head:
+                            min_distance = distance_from_head
+                            min_distance_line = line
+                            is_it_from_head = True
+                        if min_distance > distance_from_tail:
+                            min_distance = distance_from_tail
+                            min_distance_line = line
+                            is_it_from_head = False
+
+                    if min_distance < threshold_min_distance:
+                        print(f"\tbefore {len(r)}")
+                        if is_it_from_head:
+                            temp = min_distance_line + r
+                            r = temp
+                        else:
+                            temp = r + min_distance_line
+                            r = temp
+                        print(f"\tafter {len(r)}")
+                        filtered_linestrings.remove(min_distance_line)
+                    else:
+                        break
+                temp_trains_and_routes.append([train, {'type': 'LineString', 'coordinates': r}])
+                # trains_and_routes[i][1]['type'] = 'LineString'
+                # trains_and_routes[i][1]['coordinates'] = r
+
+        trains_and_routes = temp_trains_and_routes
         # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
         trains_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in trains_and_routes],
-                                          dtype=object)
+                                         dtype=object)
 
         data = gpd.GeoDataFrame()
         data['linea'] = trains_and_linestrings[:, 0]
