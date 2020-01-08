@@ -1,5 +1,6 @@
 from shapely.geometry import LineString, Point
 import geopandas as gpd
+import pandas as pd
 import numpy as np
 import pathlib
 import os
@@ -29,47 +30,69 @@ class LinestringSelector(object):
         self.Fstops = Fstops
 
     def _load_bus_data(self):
-        # Read bus routes
-        threshold_min_points = 50
-        threshold_min_distance = 1
+        try:
 
-        current_dir = pathlib.Path(__file__).parent.parent
-        routes_path = current_dir.joinpath("data/bus_data.geojson")
-        bus_file = open(routes_path)
-        data = json.load(bus_file)
-        relations = [feature for feature in data['features'] if 'relation' in feature['id']]
+            if os.path.isfile('../data/bus_processed_data.csv'):
+                csv_file = pd.read_csv('../data/bus_processed_data.csv')
+                data = gpd.GeoDataFrame(csv_file)
+            
+        except:
+            # Read bus routes
+            threshold_min_points = 50
+            threshold_min_distance = 1
 
-        buses_and_routes = np.array(
-            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
+            current_dir = pathlib.Path(__file__).parent.parent
+            routes_path = current_dir.joinpath("data/bus_data.geojson")
+            bus_file = open(routes_path)
+            data = json.load(bus_file)
+            relations = [feature for feature in data['features'] if 'relation' in feature['id']]
 
-        buses_and_linestrings = self._convert_to_linestring(buses_and_routes, threshold_min_points,threshold_min_distance)
+            buses_and_routes = np.array(
+                [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
 
-        data = gpd.GeoDataFrame()
-        data['linea'] = buses_and_linestrings[:, 0]
-        data['geometry'] = buses_and_linestrings[:, 1]
-        data['type'] = 'BUS'
+            buses_and_linestrings = self._convert_to_linestring(buses_and_routes, threshold_min_points,threshold_min_distance)
+
+            data = gpd.GeoDataFrame()
+            data['linea'] = buses_and_linestrings[:, 0]
+            data['geometry'] = buses_and_linestrings[:, 1]
+            data['type'] = 'BUS'
+
+            data.to_csv('../data/bus_processed_data.csv')
+
         return data
 
     def _load_train_data(self):
-        # Read train routes
-        threshold_min_points = 35
-        threshold_min_distance = 1
 
-        current_dir = pathlib.Path(__file__).parent.parent
-        routes_path = current_dir.joinpath("data/train_data.geojson")
-        train_file = open(routes_path)
-        data = json.load(train_file)
-        relations = [feature for feature in data['features'] if 'relation' in feature['id']]
+        try:
 
-        trains_and_routes = np.array(
-            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
+            if os.path.isfile('../data/train_processed_data.csv'):
+                csv_file = pd.read_csv('../data/train_processed_data.csv')
+                data = gpd.GeoDataFrame(csv_file)
+            
+        except:
 
-        trains_and_linestrings = self._convert_to_linestring(trains_and_routes, threshold_min_points, threshold_min_distance)
+            # Read train routes
+            threshold_min_points = 35
+            threshold_min_distance = 1
 
-        data = gpd.GeoDataFrame()
-        data['linea'] = trains_and_linestrings[:, 0]
-        data['geometry'] = trains_and_linestrings[:, 1]
-        data['type'] = 'TRAIN'
+            current_dir = pathlib.Path(__file__).parent.parent
+            routes_path = current_dir.joinpath("data/train_data.geojson")
+            train_file = open(routes_path)
+            data = json.load(train_file)
+            relations = [feature for feature in data['features'] if 'relation' in feature['id']]
+
+            trains_and_routes = np.array(
+                [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
+
+            trains_and_linestrings = self._convert_to_linestring(trains_and_routes, threshold_min_points, threshold_min_distance)
+
+            data = gpd.GeoDataFrame()
+            data['linea'] = trains_and_linestrings[:, 0]
+            data['geometry'] = trains_and_linestrings[:, 1]
+            data['type'] = 'TRAIN'
+
+            data.to_csv('../data/train_processed_data.csv')
+
         return data
 
     def check_data(self, Istops, Fstops):
