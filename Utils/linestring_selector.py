@@ -62,7 +62,7 @@ class LinestringSelector(object):
         relations = [feature for feature in data['features'] if 'relation' in feature['id']]
 
         trains_and_routes = np.array(
-            [(x['properties']['name'], x['geometry']) for x in relations], dtype=object)
+            [(x['properties']['ref'], x['geometry']) for x in relations if 'ref' in x['properties']], dtype=object)
 
         trains_and_linestrings = self._convert_to_linestring(trains_and_routes, threshold_min_points, threshold_min_distance)
 
@@ -148,6 +148,7 @@ class LinestringSelector(object):
         # Get all tuples to analyse
         tuples_array = self._preprocess_data()
 
+
         # For each tuple:
         for bus_start_stop_tuple in tuples_array:
             # Pick all the dataframe rows of that bus line
@@ -204,21 +205,38 @@ class LinestringSelector(object):
         # Get index of the nearest LineString to the final stop
         finishing_index = self._get_index_of_min_distance(multi_linestring, finishing_point)
 
-        # TODO check index order to apply logic (if starting comes latter than finishing then do logic)
-        # If the start_index is before the finishing_index (original LineString is ordered)
-        if starting_index <= finishing_index:
-            # Get only the relevant LineStrings
-            sliced_multi_linestring = multi_linestring[starting_index:finishing_index]
-            return sliced_multi_linestring
+        if self.type_of_dataset == "BUS":
 
-        elif finishing_index < starting_index:
-            # TODO check a scenario to see what could be done
-            # raise Exception("Not yet implemented")
-            return None
-        else:
-            # TODO can they be equal? Should not be
-            # raise Exception("This case shouldn't be possible")
-            return None
+            # TODO check index order to apply logic (if starting comes latter than finishing then do logic)
+            # If the start_index is before the finishing_index (original LineString is ordered)
+            if starting_index <= finishing_index:
+                # Get only the relevant LineStrings
+                sliced_multi_linestring = multi_linestring[starting_index:finishing_index]
+                return sliced_multi_linestring
+
+            elif finishing_index < starting_index:
+                # TODO check a scenario to see what could be done
+                # raise Exception("Not yet implemented")
+                return None
+            else:
+                # TODO can they be equal? Should not be
+                # raise Exception("This case shouldn't be possible")
+                return None
+
+        elif self.type_of_dataset == "TRAIN":
+
+            if starting_index <= finishing_index:
+                # Get only the relevant LineStrings
+                sliced_multi_linestring = multi_linestring[starting_index:finishing_index]
+                return sliced_multi_linestring
+
+            elif finishing_index < starting_index:
+                sliced_multi_linestring = multi_linestring[finishing_index:starting_index][::-1]
+                return sliced_multi_linestring
+            else:
+                # TODO can they be equal? Should not be
+                # raise Exception("This case shouldn't be possible")
+                return None
 
     def _convert_to_linestring(self, input_data, threshold_min_points, threshold_min_distance):
         """
@@ -235,21 +253,17 @@ class LinestringSelector(object):
             route = input_data[i][1]
             if route['type'] == 'MultiLineString':
 
-                print(f"{self.type_of_dataset} is {transportation_mean}")
                 r = []
 
                 # Step 1, retrieve the size of the linestrings
                 size_of_the_linestrings = np.array([len(line) for line in route['coordinates']])
-                print(size_of_the_linestrings)
 
                 # Step 2, delete the linestrings that have a size less than the threshold 'threshold_min_points'
                 filter_mask = size_of_the_linestrings > threshold_min_points
-                print(filter_mask)
                 filtered_linestrings = np.array([line for line in route['coordinates']])[filter_mask]
 
                 # Step 2.1, if all linestrings are deleted, do not add the transportation mean to the dataset
                 if len(filtered_linestrings) == 0:
-                    print(f'{self.type_of_dataset} line {transportation_mean} has been discarded')
                     continue
 
                 # Step 3, add the longest linestring to the route
@@ -307,14 +321,12 @@ class LinestringSelector(object):
                             is_it_from_head = False
 
                     if min_distance < threshold_min_distance:
-                        print(f"\tbefore {len(r)}")
                         if is_it_from_head:
                             temp = min_distance_line + r
                             r = temp
                         else:
                             temp = r + min_distance_line
                             r = temp
-                        print(f"\tafter {len(r)}")
                         filtered_linestrings.remove(min_distance_line)
                     else:
                         break

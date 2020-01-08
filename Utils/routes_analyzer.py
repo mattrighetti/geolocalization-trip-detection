@@ -5,6 +5,7 @@ class routes_analyzer(object):
     def __init__(self, routes: list, user_route: list):
         self.vehicle_routes = routes
         self.user_route = self._remove_duplicates(user_route)
+        # self.user_route = user_route
 
     def compute_metrics(self):
         dictionaries = []
@@ -38,14 +39,13 @@ class routes_analyzer(object):
     def _create_polygons(self, route: list):
         polygons = []
 
+
         for coordinate in range(len(route) - 1):
             p1 = Point(route[coordinate].x,
                        route[coordinate].y)
             p2 = Point(route[coordinate + 1].x,
                        route[coordinate + 1].y)
-
-            assert p1.x != p2.x
-            assert p1.y != p2.y
+            assert p1.x != p2.x or p1.y != p2.y
 
             v1, v2, v3, v4 = self._create_polygon_vertices(p1, p2)
             polygon = Polygon([v1, v2, v4, v3])
