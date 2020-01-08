@@ -30,13 +30,12 @@ class LinestringSelector(object):
         self.Fstops = Fstops
 
     def _load_bus_data(self):
-        try:
-
-            if os.path.isfile('../data/bus_processed_data.csv'):
-                csv_file = pd.read_csv('../data/bus_processed_data.csv')
-                data = gpd.GeoDataFrame(csv_file)
-            
-        except:
+    
+        if os.path.isfile('../data/bus_processed_data.csv'):
+            print('\t\tciao')
+            csv_file = pd.read_csv('../data/bus_processed_data.csv')
+            data = gpd.GeoDataFrame(csv_file)
+        else:
             # Read bus routes
             threshold_min_points = 50
             threshold_min_distance = 1
@@ -57,19 +56,17 @@ class LinestringSelector(object):
             data['geometry'] = buses_and_linestrings[:, 1]
             data['type'] = 'BUS'
 
-            data.to_csv('../data/bus_processed_data.csv')
+            data.to_csv('./data/bus_processed_data.csv')
 
         return data
 
     def _load_train_data(self):
 
-        try:
-
-            if os.path.isfile('../data/train_processed_data.csv'):
-                csv_file = pd.read_csv('../data/train_processed_data.csv')
-                data = gpd.GeoDataFrame(csv_file)
+        if os.path.isfile('../data/train_processed_data.csv'):
+            csv_file = pd.read_csv('../data/train_processed_data.csv')
+            data = gpd.GeoDataFrame(csv_file)
             
-        except:
+        else:
 
             # Read train routes
             threshold_min_points = 35
@@ -91,7 +88,7 @@ class LinestringSelector(object):
             data['geometry'] = trains_and_linestrings[:, 1]
             data['type'] = 'TRAIN'
 
-            data.to_csv('../data/train_processed_data.csv')
+            data.to_csv('./data/train_processed_data.csv')
 
         return data
 
