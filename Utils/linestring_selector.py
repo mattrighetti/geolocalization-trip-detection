@@ -30,12 +30,34 @@ class LinestringSelector(object):
         self.Fstops = Fstops
 
     def _load_bus_data(self):
-    
-        if os.path.isfile('../data/bus_processed_data.csv'):
-            print('\t\tciao')
-            csv_file = pd.read_csv('../data/bus_processed_data.csv')
+
+        bus_data_path = pathlib.Path(__file__).parent.parent.joinpath("data/bus_processed_data.csv")
+
+        try:
+
+            print("Loading from cached file...")
+
+            csv_file = pd.read_csv(bus_data_path)
             data = gpd.GeoDataFrame(csv_file)
-        else:
+
+            # Deserializing Linestring (as strings) to Linestring (as object)
+            geometries = []
+            for i in range(len(data['geometry'])):
+                linestring_as_string = str(data['geometry'][i][12:-1])
+                coordinates_as_string = linestring_as_string.split(", ")
+                coordinates_as_pair = [coordinate_as_string.split(" ") for coordinate_as_string in coordinates_as_string]
+                coordinates_as_float = [(float(coordinate[0]), float(coordinate[1])) for coordinate in coordinates_as_pair]
+                linestring = LineString(coordinates_as_float)
+                geometries.append(linestring)
+
+            data['geometry'] = geometries
+
+            print("Loading from cached file SUCCESS")
+
+        except:
+
+            print("Loading from cached file FAILED")
+
             # Read bus routes
             threshold_min_points = 50
             threshold_min_distance = 1
@@ -62,11 +84,32 @@ class LinestringSelector(object):
 
     def _load_train_data(self):
 
-        if os.path.isfile('../data/train_processed_data.csv'):
-            csv_file = pd.read_csv('../data/train_processed_data.csv')
+        train_data_path = pathlib.Path(__file__).parent.parent.joinpath("data/train_processed_data.csv")
+
+        try:
+
+            print("Loading from cached file...")
+
+            csv_file = pd.read_csv(train_data_path)
             data = gpd.GeoDataFrame(csv_file)
-            
-        else:
+
+            # Deserializing Linestring (as strings) to Linestring (as object)
+            geometries = []
+            for i in range(len(data['geometry'])):
+                linestring_as_string = str(data['geometry'][i][12:-1])
+                coordinates_as_string = linestring_as_string.split(", ")
+                coordinates_as_pair = [coordinate_as_string.split(" ") for coordinate_as_string in coordinates_as_string]
+                coordinates_as_float = [(float(coordinate[0]), float(coordinate[1])) for coordinate in coordinates_as_pair]
+                linestring = LineString(coordinates_as_float)
+                geometries.append(linestring)
+
+            data['geometry'] = geometries
+
+            print("Loading from cached file SUCCESS")
+
+        except:
+
+            print("Loading from cached file FAILED")
 
             # Read train routes
             threshold_min_points = 35
@@ -178,6 +221,8 @@ class LinestringSelector(object):
             # Foreach linestring:
             for linestring in selected_linestrings['geometry']:
                 # Get the sliced LineString & append to array
+                print(linestring)
+                print(type(linestring))
                 sliced_linestring = self._get_sliced_multi_linestring(linestring,
                                                                       bus_start_stop_tuple[1],
                                                                       bus_start_stop_tuple[2])
