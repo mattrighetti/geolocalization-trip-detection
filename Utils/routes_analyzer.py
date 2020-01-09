@@ -1,22 +1,20 @@
 from shapely.geometry import Point, Polygon
 
-
 class routes_analyzer(object):
 
-    def __init__(self, bus_routes: list, user_route: list):
-        self.bus_routes = bus_routes
+    def __init__(self, routes: list, user_route: list):
+        self.vehicle_routes = routes
         self.user_route = self._remove_duplicates(user_route)
+        # self.user_route = user_route
 
     def compute_metrics(self):
         dictionaries = []
 
         self.check_input_corretness()
 
-        for route in self.bus_routes:
-
-            # Remove duplicate points from the list
-            route = self._remove_duplicates(route)
-
+        for route in self.vehicle_routes:
+            # Remove duplicate points from the list and reconstruct the tuple
+            route = (self._remove_duplicates(route[0]), route[1])
             # Compute metrics for each bus route
             result_dict = self._compute_route_metrics(route)
             dictionaries.append(result_dict)
@@ -26,28 +24,28 @@ class routes_analyzer(object):
     # Check if all the data structures are the one expected by the class
     def check_input_corretness(self):
         # Check that the bus routes list is not empty
-        if (len(self.bus_routes) == 0):
-            raise Exception("Bus routes is empty")
+        if (len(self.vehicle_routes) == 0):
+            raise Exception('Bus routes is empty')
         
         # Check that bus routes is a list
-        if (not isinstance(self.bus_routes, list)):
-            raise Exception("Bus routes is not a list but " + str(type(self.bus_routes)))
+        if (not isinstance(self.vehicle_routes, list)):
+            raise Exception('Bus routes is not a list but ' + str(type(self.vehicle_routes)))
 
         # Check that the list contains Point
-        if (not isinstance(self.bus_routes[0][0], Point)):
-            raise Exception("Bus routes does not contain Points but " + str(type(self.bus_routes[0])))
+        if (not isinstance(self.vehicle_routes[0][0][0], Point)):
+            raise Exception('Bus routes does not contain Points but ' + str(type(self.vehicle_routes[0][0][0])))
 
     # Given a list of Point representing the bus route return a list of Polygon 
-    def _create_polygons(self, bus_route: list):
+    def _create_polygons(self, route: list):
         polygons = []
 
-        for coordinate in range(len(bus_route) - 1):
-            p1 = Point(bus_route[coordinate].x, bus_route[coordinate].y)
-            p2 = Point(bus_route[coordinate + 1].x,
-                       bus_route[coordinate + 1].y)
 
-            assert p1.x != p2.x
-            assert p1.y != p2.y
+        for coordinate in range(len(route) - 1):
+            p1 = Point(route[coordinate].x,
+                       route[coordinate].y)
+            p2 = Point(route[coordinate + 1].x,
+                       route[coordinate + 1].y)
+            assert p1.x != p2.x or p1.y != p2.y
 
             v1, v2, v3, v4 = self._create_polygon_vertices(p1, p2)
             polygon = Polygon([v1, v2, v4, v3])
@@ -56,8 +54,9 @@ class routes_analyzer(object):
         return polygons
 
     # Analyze a single route
-    def _compute_route_metrics(self, bus_route: list):
-        bus_route_polygons = self._create_polygons(bus_route)
+    def _compute_route_metrics(self, route: tuple):
+        #Create the polygons with the route, store in the first position of the tuple (List of Point, 'VECHICLE')
+        bus_route_polygons = self._create_polygons(route[0])
         user_coordinates_matched = []
         polygons_matched = []
 
@@ -84,11 +83,12 @@ class routes_analyzer(object):
             poly_metric = len(polygons_matched) / len(bus_route_polygons)
 
         result_dict = { 
-                    "route" : bus_route, 
-                    "percentage_user": user_metric,
-                    "number_user_coordinates": len(user_coordinates_matched), 
-                    "percentage_poly": poly_metric,
-                    "number_polygons": len(polygons_matched)
+                    'route' : route[0], 
+                    'vehicle': route[1],
+                    'percentage_user': user_metric,
+                    'number_user_coordinates': len(user_coordinates_matched), 
+                    'percentage_poly': poly_metric,
+                    'number_polygons': len(polygons_matched)
                 }
 
         return result_dict
@@ -133,7 +133,6 @@ class routes_analyzer(object):
 
     def _remove_duplicates(self, points: list):
         unique_list = []
-
         for point in points:
             if point not in unique_list:
                 unique_list.append(point)

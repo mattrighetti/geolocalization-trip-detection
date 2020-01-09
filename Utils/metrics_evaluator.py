@@ -9,7 +9,8 @@ class metrics_evaluator(object):
 
         # Get the metrics
         metrics = list(self.route_dictionaries[0].keys())
-        metrics.remove("route")
+        metrics.remove('route')
+        metrics.remove('vehicle')
 
         best_routes = self.route_dictionaries
 
@@ -28,15 +29,15 @@ class metrics_evaluator(object):
     def check_input_corretness(self):
         # Check that the route dictionaries list is not empty
         if (len(self.route_dictionaries) == 0):
-            raise Exception("Route dictionaries is empty")
+            raise Exception('Route dictionaries is empty')
         
         # Check that route dictionaries is a list
         if (not isinstance(self.route_dictionaries, list)):
-            raise Exception("Route dictionaries is not a list but " + str(type(self.route_dictionaries)))
+            raise Exception('Route dictionaries is not a list but ' + str(type(self.route_dictionaries)))
 
         # Check that the route dictionaries contains dictionaries
         if (not isinstance(self.route_dictionaries[0], dict)):
-            raise Exception("Route dictionaries does not contain dictionaries but " + str(type(self.route_dictionaries[0])))
+            raise Exception('Route dictionaries does not contain dictionaries but ' + str(type(self.route_dictionaries[0])))
 
     # Evaluate the list of dictionary on a single metric
     def _evaluate_metric(self, routes: list, metric: str):

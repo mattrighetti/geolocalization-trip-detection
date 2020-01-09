@@ -5,6 +5,7 @@ from Utils.linestring_selector import LinestringSelector
 from Utils.routes_analyzer import routes_analyzer
 from Utils.metrics_evaluator import metrics_evaluator
 from Utils.NetworkManager import send_data
+import geopandas as gpd
 
 
 
@@ -43,11 +44,11 @@ from Utils.NetworkManager import send_data
 #       Input: bus_routes, user_route
 #       Output: list of route_dictionary
 #                           result_dict = {
-#                                               "route" : bus_route,
-#                                               "percentage_user": user_metric,
-#                                               "number_user_coordinates": len(user_coordinates_matched),
-#                                               "percentage_poly": poly_metric,
-#                                               "number_polygons": len(polygons_matched)
+#                                               'route' : bus_route,
+#                                               'percentage_user': user_metric,
+#                                               'number_user_coordinates': len(user_coordinates_matched),
+#                                               'percentage_poly': poly_metric,
+#                                               'number_polygons': len(polygons_matched)
 #                                           }
 
 
@@ -64,65 +65,121 @@ from Utils.NetworkManager import send_data
 # Step 8 Save the data in the database
 #       Input: user_id, ticket_id, km_travelled
 
-
-
-def detect_vehicle_and_km(user_route: list, app=None):
-
-    # STEP 1
-    # Retrieving initial and finhsing Point of user's trip
-    initial_point, finishing_point = find_points(user_route)
-    if app is not None:
-        app.logger.info("Found initial and finishing point")
-
+def get_bus_routes(initial_point, finishing_point):
     # STEP 2
-    # Find bus stops near I. Do the same for E
-    stops_object = stops()
+    # Find bus stops near I. Do the same for F
+    stops_object = stops(type_of_dataset='BUS')
     offset_square = 0.001
-    Ilist = stops_object.find_bus_stops_close_to(initial_point, radius=offset_square)
-    Flist = stops_object.find_bus_stops_close_to(finishing_point, radius=offset_square)
-    if app is not None:
-        app.logger.info("Inital bus stops: %d", len(Ilist))
-        app.logger.info("Finishing bus stops: %d", len(Flist))
-
+    Ilist = stops_object.find_stops_close_to(initial_point, radius=offset_square)
+    Flist = stops_object.find_stops_close_to(finishing_point, radius=offset_square)
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
-    if app is not None:
-        app.logger.info("Bus stops interception: %d", len(Ilist))
-
-
+    print(f'bus stops found: {str(len(Ilist))}')
     # STEP 4
     # Create a list of bus routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist)
     sliced_routes = linestring_selector.get_sliced_routes()
-    if app is not None:
-        app.logger.info("Bus routes found: %d", len(sliced_routes))
+    print(f'bus routes found: {str(len(sliced_routes))}')
+    return sliced_routes
+
+def get_train_routes(initial_point, finishing_point):
+    # STEP 2
+    # Find train stops near I. Do the same for F
+    stops_object = stops(type_of_dataset='TRAIN')
+    offset_square = 0.001
+    Ilist = stops_object.find_stops_close_to(initial_point, radius=offset_square)
+    Flist = stops_object.find_stops_close_to(finishing_point, radius=offset_square)
+    # STEP 3
+    # Do the intersection in order to find the bus lines in common
+    Ilist, Flist = intercept(Ilist, Flist)
+
+    
+    print(f'train stops found: {Ilist}')
+    print(f'train stops found: {Flist}')
+
+    # STEP 4
+    # Create a list of train routes that have a starting point in Ilist and an end in Flist
+    linestring_selector = LinestringSelector(Ilist, Flist, type_of_dataset="TRAIN")
+    sliced_routes = linestring_selector.get_sliced_routes()
+    print(f'train routes found: {str(len(sliced_routes))}')
+    return sliced_routes
+
+def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
+
+    route_dictionaries = []
+
+    try:
+        # STEP 1 for buses
+        # Retrieving initial and finhsing Point of user's trip
+        bus_initial_point, bus_finishing_point = find_points(snapped_user_route)
+
+        # STEP 2-4 for buses
+        sliced_routes_bus = get_bus_routes(bus_initial_point, bus_finishing_point)
+        sliced_routes_bus = [(x, 'BUS') for x in sliced_routes_bus]
+        # STEP 5
+        # For every route in sliced_routes compute its metrics.
+        bus_analyzer = routes_analyzer(sliced_routes_bus, snapped_user_route)
+        route_dictionaries += bus_analyzer.compute_metrics()
+    except Exception as message:
+        print(f"No bus route matches the user one: " + str(message))
+    
+    print(f"Searched for bus routes {str(len(route_dictionaries))}")
+
+    try:
+        # STEP 1 for trains
+        # Retrieving initial and finhsing Point of user's trip
+        train_initial_point, train_finishing_point = find_points(raw_user_route)
+
+        # STEP 2-4 for trains
+        sliced_routes_train = get_train_routes(train_initial_point, train_finishing_point)
+        sliced_routes_train = [(x, 'TRAIN') for x in sliced_routes_train]
+        # STEP 5
+        # For every route in sliced_routes compute its metrics.
+        train_analyzer = routes_analyzer(sliced_routes_train, raw_user_route)
+        route_dictionaries += train_analyzer.compute_metrics()
+    except Exception as message:
+        print(f"No train route matches the user one: " + str(message))
+
+    print(f"Searched for train routes {str(len(route_dictionaries))}")
 
 
-    # STEP 5
-    # For every route in bus_route compute its metrics.
-    analyzer = routes_analyzer(sliced_routes, user_route)
-    route_dictionaries = analyzer.compute_metrics()
+    if len(route_dictionaries) != 0:
+        # STEP 6
+        # Search the dictionary with the maximum metrics
+        print("Space race between:")
+        for route in route_dictionaries:
+            print(route['route'][0])
+            print(route['route'][len(route['route']) - 1])
+            print(route['percentage_user'])
+            print(route['number_user_coordinates'])
+            print(route['percentage_poly'])
+            print(route['number_polygons'])
+            print('-------------------------------------')
+        evaluator = metrics_evaluator(route_dictionaries)
+        best_route = evaluator.evaluate()
 
-    # STEP 6
-    # Search the dictionary with the maximum metrics
-    evaluator = metrics_evaluator(route_dictionaries)
-    best_route = evaluator.evaluate()
-    if app is not None:
-        app.logger.info("Metrics: {")
-        app.logger.info("\tpercentage_user: %f", best_route['percentage_user'])
-        app.logger.info("\tnumber_user_coordinates: %d", best_route['number_user_coordinates'])
-        app.logger.info("\tpercentage_poly: %f", best_route['percentage_poly'])
-        app.logger.info("\tnumber_polygons: %d", best_route['number_polygons'])
-        app.logger.info("}")
+        print("winner")
+        print(best_route['route'][0])
+        print(best_route['route'][len(best_route['route']) - 1])
+        print(best_route['percentage_user'])
+        print(best_route['number_user_coordinates'])
+        print(best_route['percentage_poly'])
+        print(best_route['number_polygons'])
 
-    # STEP 7
-    # Calculate the distance with haversine
-    km_travelled = compute_kilometers(best_route['route'])
-    if app is not None:
-        app.logger.info("km calculated: %f", km_travelled)
-    vehicle = "bus"
-    return vehicle, km_travelled
+        # STEP 7
+        # Calculate the distance with haversine
+        print(best_route['route'][0])
+        print(best_route['route'][len(best_route['route']) - 1])
+        print('route len ' + str(len(best_route['route'])))
+
+        km_travelled = compute_kilometers(best_route['route'])
+        vehicle = best_route['vehicle']
+        return vehicle, km_travelled
+
+    else:
+        # No match is found
+        return None, 0
 
 
 #   Find the first & last user coordinates.
@@ -147,8 +204,7 @@ def compute_kilometers(route: list):
     return total_km
 
 
-def elaborate_request(user_id, ticket_id, start_time, end_time, data, app=None):
-    
+def elaborate_request(user_id, ticket_id, start_time, end_time, raw_data, snapped_data):
     # STEP 0
     # Parse the GeoJSON.
     user_data = {
@@ -163,14 +219,10 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, data, app=None):
     # STEP 1-7
         
     
-    vehicle, km_travelled = detect_vehicle_and_km(user_route=data, app=app)
-
+    vehicle, km_travelled = detect_vehicle_and_km(raw_user_route=raw_data, snapped_user_route=snapped_data)
     user_data['km_travelled'] = km_travelled
     user_data['transportation'] = vehicle
 
-    # STEP 8
-    # Save the data in the database
-    # database_manager = MongoDBManager()
-    # database_manager.save_to_database_dict(user_data)
+    print(user_data)
 
     return user_data

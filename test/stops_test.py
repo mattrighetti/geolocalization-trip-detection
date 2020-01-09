@@ -24,7 +24,7 @@ def test_find_bus_stops_close_to_Duomo():
     y = 45.46427
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to the Duomo
     assert len(closest_stops) > 0
@@ -33,7 +33,7 @@ def test_find_bus_stops_close_to_Duomo():
     # Check that those buses are stopping near the Duomo
     bus_lines_to_check = ['12', '16', '19']
     print(f"Looking if the bus lines {bus_lines_to_check} are in the closest stops")
-    bus_lines_in_the_closest_stops = set([stop[4] for stop in closest_stops])
+    bus_lines_in_the_closest_stops = set([stop[0] for stop in closest_stops])
     is_the_bus_line_contained = [bus_line in bus_lines_in_the_closest_stops for bus_line in bus_lines_to_check]
     print(f"Are they contained? {is_the_bus_line_contained}")
     assert all(is_the_bus_line_contained) is True
@@ -47,7 +47,7 @@ def test_find_bus_stops_close_to_Porta_Genova():
     y = 45.456665
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to Porta Genova
     assert len(closest_stops) > 0
@@ -56,11 +56,12 @@ def test_find_bus_stops_close_to_Porta_Genova():
     # Check that those buses are stopping near Porta Genova
     bus_lines_to_check = ['2', '14']
     print(f"Looking if the bus lines {bus_lines_to_check} are in the closest stops")
-    bus_lines_in_the_closest_stops = set([stop[4] for stop in closest_stops])
+    bus_lines_in_the_closest_stops = set([stop[0] for stop in closest_stops])
     is_the_bus_line_contained = [bus_line in bus_lines_in_the_closest_stops for bus_line in bus_lines_to_check]
     print(f"Are they contained? {is_the_bus_line_contained}")
     assert all(is_the_bus_line_contained) is True
     print("Test passed.\n")
+
 
 # Testing the bus stops to the politecnico
 def test_find_bus_stops_close_to_Politecnico():
@@ -69,7 +70,7 @@ def test_find_bus_stops_close_to_Politecnico():
     y = 45.478657
     p = Point(x, y)
     radius = 0.0015
-    closest_stops = stops().find_bus_stops_close_to(p, radius)
+    closest_stops = stops().find_stops_close_to(p, radius)
 
     # Check that there are some stops close to Politecnico
     assert len(closest_stops) > 0
@@ -78,7 +79,7 @@ def test_find_bus_stops_close_to_Politecnico():
     # Check that those buses are stopping near Politecnico
     bus_lines_to_check = ['19', '33']
     print(f"Looking if the bus lines {bus_lines_to_check} are in the closest stops")
-    bus_lines_in_the_closest_stops = set([stop[4]
+    bus_lines_in_the_closest_stops = set([stop[0]
                                           for stop
                                           in closest_stops])
     is_the_bus_line_contained = [bus_line in bus_lines_in_the_closest_stops
@@ -87,6 +88,7 @@ def test_find_bus_stops_close_to_Politecnico():
     print(f"Are they contained? {is_the_bus_line_contained}")
     assert all(is_the_bus_line_contained) is True
     print("Test passed.\n")
+
 
 # Testing that there is at least one bus line from Duomo to Polimi
 def test_intercept_from_Duomo_to_Politecnico():
@@ -98,15 +100,15 @@ def test_intercept_from_Duomo_to_Politecnico():
     politecnico_y = 45.478657
     politecnico_coordinate = Point(politecnico_x, politecnico_y)
     radius = 0.0015
-    duomo_stops = stops().find_bus_stops_close_to(duomo_coordinate, radius)
-    polimi_stops = stops().find_bus_stops_close_to(politecnico_coordinate, radius)
+    duomo_stops = stops().find_stops_close_to(duomo_coordinate, radius)
+    polimi_stops = stops().find_stops_close_to(politecnico_coordinate, radius)
     relevant_duomo_stops, relevant_politecnico_stops = intercept(duomo_stops, polimi_stops)
 
     # Check the format of the output
     assert isinstance(relevant_duomo_stops, geopandas.geodataframe.GeoDataFrame)
     assert isinstance(relevant_politecnico_stops, geopandas.geodataframe.GeoDataFrame)
     print("The returned datasets are both GeoDataframes, Great.")
-    expected_columns = ['id', 'x', 'y', 'location', 'bus_id', 'point']
+    expected_columns = ['bus_id', 'longitude', 'latitude', 'point']
     does_result_contains_the_expected_columns = [column in relevant_duomo_stops.columns
                                                  for column
                                                  in expected_columns]
@@ -127,6 +129,7 @@ def test_intercept_from_Duomo_to_Politecnico():
     print("Only line '19' connects Duomo to Politecnico")
     print("Test passed.\n")
 
+
 # Testing exceptions
 def test_intercept_exception():
     print("Testing interception error")
@@ -136,6 +139,7 @@ def test_intercept_exception():
     except:
         assert True
         print("Test passed.\n")
+
 
 def test_find_common_line_bus_exception():
     print("Testing find common bus lines error")
