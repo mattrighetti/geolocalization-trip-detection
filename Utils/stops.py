@@ -5,6 +5,7 @@ import pathlib
 from shapely.geometry import Point
 import numpy as np
 
+
 # Find the common bus lines among an Initial list of points and a Final list of points
 # The Initial list should contain at least one Point
 # The Final list should contain at least one Point
@@ -22,6 +23,21 @@ def _find_common_bus_lines(Ilist: list, Flist: list):
         return common_lines
 
 
+def _unique(lst: list):
+    acc_list = []
+    for e in lst:
+        is_already_present = True
+        for acc_item in acc_list:
+            if acc_item[0] == e[0] and \
+                    acc_item[1] == e[1] and \
+                    acc_item[2] == e[2]:
+                is_already_present = False
+                break
+        if is_already_present:
+            acc_list.append((e[0], e[1], e[2]))
+    return acc_list
+
+
 # Find the interception between two set of stops
 # The Initial list should contain at least one Point
 # The Final list should contain at least one Point
@@ -36,15 +52,19 @@ def intercept(Ilist: list, Flist: list):
         # Find the lines that are in both lists
         common_lines = _find_common_bus_lines(Ilist, Flist)
         # Find the common lines contained in the initial list
-        filtered_IList = list(set([element for element in Ilist if element[0] in common_lines]))
+        filtered_IList = [element for element in Ilist if element[0] in common_lines]
         # Find the common lines contained in the final list
-        filtered_FList = list(set([element for element in Flist if element[0] in common_lines]))
+        filtered_FList = [element for element in Flist if element[0] in common_lines]
+        # Delete the duplicates
+        filtered_IList = _unique(filtered_IList)
+        filtered_FList = _unique(filtered_FList)
         # Wrap them in a geopanda dataframe
         result_IDataframe = gpd.GeoDataFrame(filtered_IList, columns=['bus_id', 'longitude', 'latitude'])
         result_IDataframe['point'] = [Point(float(e[1]), float(e[2])) for e in filtered_IList]
         result_FDataframe = gpd.GeoDataFrame(filtered_FList, columns=['bus_id', 'longitude', 'latitude'])
         result_FDataframe['point'] = [Point(float(e[1]), float(e[2])) for e in filtered_FList]
         return result_IDataframe, result_FDataframe
+
 
 # Class that manages the stops
 class stops(object):
@@ -99,12 +119,12 @@ class stops(object):
             # Computing the result
             # Start by computing a partial result
             result = [record for record in self.dataset.values if
-                              from_x < float(record[1]) < to_x and from_y < float(record[2]) < to_y]
+                      from_x < float(record[1]) < to_x and from_y < float(record[2]) < to_y]
             return result
 
     # Find the bus stops close to this point with exponential backoff policy
     # The exponential backoff is used in order to find a minimum amount of stops
-    def find_stops_close_to(self, p: Point, radius=0.0003080999999998113, minimum_amount_of_stops = 5):
+    def find_stops_close_to(self, p: Point, radius=0.0003080999999998113, minimum_amount_of_stops=5):
         # Initialize the result to an empty list
         result = []
         i = 0
@@ -119,6 +139,7 @@ class stops(object):
             radius = radius * 1.5
             i += 1
         return result
+
 
 if __name__ == '__main__':
     s = stops()

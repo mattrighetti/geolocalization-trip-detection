@@ -94,14 +94,6 @@ def get_train_routes(initial_point, finishing_point):
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
 
-   # for index, row in Ilist.iterrows():
-   #     if index > 0:
-   #         Ilist.drop(index, inplace=True)
-   # 
-   # for index, row in Flist.iterrows():
-   #     if index > 0:
-   #         Flist.drop(index, inplace=True)
-
     
     print(f'train stops found: {Ilist}')
     print(f'train stops found: {Flist}')
