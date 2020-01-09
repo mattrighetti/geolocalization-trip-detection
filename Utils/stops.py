@@ -36,9 +36,9 @@ def intercept(Ilist: list, Flist: list):
         # Find the lines that are in both lists
         common_lines = _find_common_bus_lines(Ilist, Flist)
         # Find the common lines contained in the initial list
-        filtered_IList = [element for element in Ilist if element[0] in common_lines]
+        filtered_IList = list(set([element for element in Ilist if element[0] in common_lines]))
         # Find the common lines contained in the final list
-        filtered_FList = [element for element in Flist if element[0] in common_lines]
+        filtered_FList = list(set([element for element in Flist if element[0] in common_lines]))
         # Wrap them in a geopanda dataframe
         result_IDataframe = gpd.GeoDataFrame(filtered_IList, columns=['bus_id', 'longitude', 'latitude'])
         result_IDataframe['point'] = [Point(float(e[1]), float(e[2])) for e in filtered_IList]

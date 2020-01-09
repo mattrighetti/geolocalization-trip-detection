@@ -5,6 +5,7 @@ from Utils.linestring_selector import LinestringSelector
 from Utils.routes_analyzer import routes_analyzer
 from Utils.metrics_evaluator import metrics_evaluator
 from Utils.NetworkManager import send_data
+import geopandas as gpd
 
 
 
@@ -74,10 +75,12 @@ def get_bus_routes(initial_point, finishing_point):
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
+    print(f'bus stops found: {str(len(Ilist))}')
     # STEP 4
     # Create a list of bus routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist)
     sliced_routes = linestring_selector.get_sliced_routes()
+    print(f'bus routes found: {str(len(sliced_routes))}')
     return sliced_routes
 
 def get_train_routes(initial_point, finishing_point):
@@ -90,30 +93,46 @@ def get_train_routes(initial_point, finishing_point):
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
+
+   # for index, row in Ilist.iterrows():
+   #     if index > 0:
+   #         Ilist.drop(index, inplace=True)
+   # 
+   # for index, row in Flist.iterrows():
+   #     if index > 0:
+   #         Flist.drop(index, inplace=True)
+
+    
+    print(f'train stops found: {Ilist}')
+    print(f'train stops found: {Flist}')
+
     # STEP 4
     # Create a list of train routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist, type_of_dataset="TRAIN")
     sliced_routes = linestring_selector.get_sliced_routes()
+    print(f'train routes found: {str(len(sliced_routes))}')
     return sliced_routes
 
 def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
 
     route_dictionaries = []
 
-    # try:
-    # STEP 1 for buses
-    # Retrieving initial and finhsing Point of user's trip
-    bus_initial_point, bus_finishing_point = find_points(snapped_user_route)
+    try:
+        # STEP 1 for buses
+        # Retrieving initial and finhsing Point of user's trip
+        bus_initial_point, bus_finishing_point = find_points(snapped_user_route)
 
-    # STEP 2-4 for buses
-    sliced_routes_bus = get_bus_routes(bus_initial_point, bus_finishing_point)
-    sliced_routes_bus = [(x, 'BUS') for x in sliced_routes_bus]
-    # STEP 5
-    # For every route in sliced_routes compute its metrics.
-    bus_analyzer = routes_analyzer(sliced_routes_bus, snapped_user_route)
-    route_dictionaries += bus_analyzer.compute_metrics()
-    # except:
-    #     print(f"No bus route matches the user one")
+        # STEP 2-4 for buses
+        sliced_routes_bus = get_bus_routes(bus_initial_point, bus_finishing_point)
+        sliced_routes_bus = [(x, 'BUS') for x in sliced_routes_bus]
+        # STEP 5
+        # For every route in sliced_routes compute its metrics.
+        bus_analyzer = routes_analyzer(sliced_routes_bus, snapped_user_route)
+        route_dictionaries += bus_analyzer.compute_metrics()
+    except Exception as message:
+        print(f"No bus route matches the user one: " + str(message))
+    
+    print(f"Searched for bus routes {str(len(route_dictionaries))}")
 
     try:
         # STEP 1 for trains
@@ -127,40 +146,48 @@ def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
         # For every route in sliced_routes compute its metrics.
         train_analyzer = routes_analyzer(sliced_routes_train, raw_user_route)
         route_dictionaries += train_analyzer.compute_metrics()
-    except:
-        print(f"No train route matches the user one")
+    except Exception as message:
+        print(f"No train route matches the user one: " + str(message))
 
-    # STEP 6
-    # Search the dictionary with the maximum metrics
-    print("Space race between:")
-    for route in route_dictionaries:
-        print(route['route'][0])
-        print(route['route'][len(route['route']) - 1])
-        print(route['percentage_user'])
-        print(route['number_user_coordinates'])
-        print(route['percentage_poly'])
-        print(route['number_polygons'])
-        print('-------------------------------------')
-    evaluator = metrics_evaluator(route_dictionaries)
-    best_route = evaluator.evaluate()
+    print(f"Searched for train routes {str(len(route_dictionaries))}")
 
-    print("winner")
-    print(best_route['route'][0])
-    print(best_route['route'][len(best_route['route']) - 1])
-    print(best_route['percentage_user'])
-    print(best_route['number_user_coordinates'])
-    print(best_route['percentage_poly'])
-    print(best_route['number_polygons'])
 
-    # STEP 7
-    # Calculate the distance with haversine
-    print(best_route['route'][0])
-    print(best_route['route'][len(best_route['route']) - 1])
-    print('route len ' + str(len(best_route['route'])))
-    
-    km_travelled = compute_kilometers(best_route['route'])
-    vehicle = best_route['vehicle']
-    return vehicle, km_travelled
+    if len(route_dictionaries) != 0:
+        # STEP 6
+        # Search the dictionary with the maximum metrics
+        print("Space race between:")
+        for route in route_dictionaries:
+            print(route['route'][0])
+            print(route['route'][len(route['route']) - 1])
+            print(route['percentage_user'])
+            print(route['number_user_coordinates'])
+            print(route['percentage_poly'])
+            print(route['number_polygons'])
+            print('-------------------------------------')
+        evaluator = metrics_evaluator(route_dictionaries)
+        best_route = evaluator.evaluate()
+
+        print("winner")
+        print(best_route['route'][0])
+        print(best_route['route'][len(best_route['route']) - 1])
+        print(best_route['percentage_user'])
+        print(best_route['number_user_coordinates'])
+        print(best_route['percentage_poly'])
+        print(best_route['number_polygons'])
+
+        # STEP 7
+        # Calculate the distance with haversine
+        print(best_route['route'][0])
+        print(best_route['route'][len(best_route['route']) - 1])
+        print('route len ' + str(len(best_route['route'])))
+
+        km_travelled = compute_kilometers(best_route['route'])
+        vehicle = best_route['vehicle']
+        return vehicle, km_travelled
+
+    else:
+        # No match is found
+        return None, 0
 
 
 #   Find the first & last user coordinates.
@@ -201,7 +228,6 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, raw_data, snappe
         
     
     vehicle, km_travelled = detect_vehicle_and_km(raw_user_route=raw_data, snapped_user_route=snapped_data)
-
     user_data['km_travelled'] = km_travelled
     user_data['transportation'] = vehicle
 

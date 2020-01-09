@@ -5,6 +5,7 @@ import numpy as np
 import pathlib
 import os
 import json
+import time
 from geopy import distance
 
 
@@ -210,7 +211,7 @@ class LinestringSelector(object):
 
         # Get all tuples to analyse
         tuples_array = self._preprocess_data()
-
+        start_time = time.time()
 
         # For each tuple:
         for bus_start_stop_tuple in tuples_array:
@@ -221,15 +222,18 @@ class LinestringSelector(object):
             # Foreach linestring:
             for linestring in selected_linestrings['geometry']:
                 # Get the sliced LineString & append to array
-                print(linestring)
-                print(type(linestring))
+                #print(linestring)
+                #print(type(linestring))
                 sliced_linestring = self._get_sliced_multi_linestring(linestring,
                                                                       bus_start_stop_tuple[1],
                                                                       bus_start_stop_tuple[2])
                 if sliced_linestring is not None and len(sliced_linestring) > 0:
                     sliced_linestrings_array.append(sliced_linestring)
-
+        
         route_points = self.to_list_of_points(sliced_linestrings_array)
+        end_time = time.time()
+        print("Converted data to linestrings")
+        print("time " + str(end_time - start_time))
         return route_points
 
     def _convert_to_multilinestring(self, linestring):
