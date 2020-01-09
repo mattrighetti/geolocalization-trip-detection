@@ -35,7 +35,6 @@ def data(user_id, ticket_id):
 
     try:
         req = request.get_json()
-        print(req)
         geojson = req['data']
         start_time = req['start_time']
         end_time = req['end_time']
@@ -66,4 +65,4 @@ def data(user_id, ticket_id):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port='5001' , debug=True)
+    app.run(host='0.0.0.0', debug=True)
