@@ -181,7 +181,7 @@ class LinestringSelector(object):
                 sliced_linestring = self._get_sliced_multi_linestring(linestring,
                                                                       bus_start_stop_tuple[1],
                                                                       bus_start_stop_tuple[2])
-                if sliced_linestring is not None:
+                if sliced_linestring is not None and len(sliced_linestring) > 0:
                     sliced_linestrings_array.append(sliced_linestring)
 
         route_points = self.to_list_of_points(sliced_linestrings_array)

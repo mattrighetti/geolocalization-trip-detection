@@ -107,7 +107,8 @@ class stops(object):
     def find_stops_close_to(self, p: Point, radius=0.0003080999999998113, minimum_amount_of_stops = 5):
         # Initialize the result to an empty list
         result = []
-        while len(result) < 3:
+        i = 0
+        while len(result) < 3 and i < 5:
             # Compute the coordinates of the rectangle used to find the stops
             from_x = p.x - radius
             from_y = p.y - radius
@@ -116,6 +117,7 @@ class stops(object):
             result = self._search_indexes(from_x, to_x, from_y, to_y)
             # Exponential backoff policy
             radius = radius * 1.5
+            i += 1
         return result
 
 if __name__ == '__main__':
