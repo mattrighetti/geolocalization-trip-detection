@@ -98,7 +98,9 @@ def get_train_routes(initial_point, finishing_point):
 
 def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
 
+    route_dictionaries = []
 
+    # try:
     # STEP 1 for buses
     # Retrieving initial and finhsing Point of user's trip
     bus_initial_point, bus_finishing_point = find_points(snapped_user_route)
@@ -109,19 +111,24 @@ def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
     # STEP 5
     # For every route in sliced_routes compute its metrics.
     bus_analyzer = routes_analyzer(sliced_routes_bus, snapped_user_route)
-    route_dictionaries = bus_analyzer.compute_metrics()
+    route_dictionaries += bus_analyzer.compute_metrics()
+    # except:
+    #     print(f"No bus route matches the user one")
 
-    # STEP 1 for trains
-    # Retrieving initial and finhsing Point of user's trip
-    train_initial_point, train_finishing_point = find_points(raw_user_route)
+    try:
+        # STEP 1 for trains
+        # Retrieving initial and finhsing Point of user's trip
+        train_initial_point, train_finishing_point = find_points(raw_user_route)
 
-    # STEP 2-4 for trains
-    sliced_routes_train = get_train_routes(train_initial_point, train_finishing_point)
-    sliced_routes_train = [(x, 'TRAIN') for x in sliced_routes_train]
-    # STEP 5
-    # For every route in sliced_routes compute its metrics.
-    train_analyzer = routes_analyzer(sliced_routes_train, raw_user_route)
-    route_dictionaries += train_analyzer.compute_metrics()
+        # STEP 2-4 for trains
+        sliced_routes_train = get_train_routes(train_initial_point, train_finishing_point)
+        sliced_routes_train = [(x, 'TRAIN') for x in sliced_routes_train]
+        # STEP 5
+        # For every route in sliced_routes compute its metrics.
+        train_analyzer = routes_analyzer(sliced_routes_train, raw_user_route)
+        route_dictionaries += train_analyzer.compute_metrics()
+    except:
+        print(f"No train route matches the user one")
 
     # STEP 6
     # Search the dictionary with the maximum metrics
