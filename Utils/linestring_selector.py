@@ -88,7 +88,6 @@ class LinestringSelector(object):
         train_data_path = pathlib.Path(__file__).parent.parent.joinpath("data/train_processed_data.csv")
 
         try:
-
             print("Loading from cached file...")
 
             csv_file = pd.read_csv(train_data_path)
@@ -321,7 +320,6 @@ class LinestringSelector(object):
             transportation_mean = input_data[i][0]
             route = input_data[i][1]
             if route['type'] == 'MultiLineString':
-
                 r = []
 
                 # Step 1, retrieve the size of the linestrings
@@ -400,7 +398,8 @@ class LinestringSelector(object):
                     else:
                         break
                 temp_transports_and_routes.append([transportation_mean, {'type': 'LineString', 'coordinates': r}])
-
+            else:
+                temp_transports_and_routes.append([transportation_mean, {'type': 'LineString', 'coordinates': route['coordinates']}])
         output_data = temp_transports_and_routes
         # Casting a dictionary (composed by 'type' and 'coordinates') into a linestring
         transports_and_linestrings = np.array([(x[0], LineString(x[1]['coordinates'])) for x in output_data],
