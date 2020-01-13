@@ -12,6 +12,7 @@ class routes_analyzer(object):
 
         self.check_input_corretness()
 
+        # Compute metrics for each bus route and append to a list
         for route in self.vehicle_routes:
             # Remove duplicate points from the list and reconstruct the tuple
             route = (self._remove_duplicates(route[0]), route[1])
