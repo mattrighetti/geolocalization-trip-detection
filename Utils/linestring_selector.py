@@ -34,6 +34,7 @@ class LinestringSelector(object):
 
         bus_data_path = pathlib.Path(__file__).parent.parent.joinpath("data/bus_processed_data.csv")
 
+        #Try to load the processed version
         try:
 
             print("Loading from cached file...")
@@ -54,7 +55,8 @@ class LinestringSelector(object):
             data['geometry'] = geometries
 
             print("Loading from cached file SUCCESS")
-
+            
+        # Otherwise create it from scratch
         except:
 
             print("Loading from cached file FAILED")
@@ -87,6 +89,7 @@ class LinestringSelector(object):
 
         train_data_path = pathlib.Path(__file__).parent.parent.joinpath("data/train_processed_data.csv")
 
+        #Try to load the processed version
         try:
             print("Loading from cached file...")
 
@@ -107,6 +110,7 @@ class LinestringSelector(object):
 
             print("Loading from cached file SUCCESS")
 
+        # Otherwise create it from scratch
         except:
 
             print("Loading from cached file FAILED")
@@ -183,9 +187,9 @@ class LinestringSelector(object):
         @return: list of Points
         """
         bus_lines = []
-        route_points = []
 
         for bus_line in linestrings_array:
+            route_points = []
             for linestring in bus_line:
                 p1 = Point(linestring.coords[0])
                 assert type(p1) == Point
@@ -194,7 +198,7 @@ class LinestringSelector(object):
                 route_points.append(p2)
             route_points = self._remove_duplicates(route_points)
             bus_lines.append(route_points)
-
+                    
         return bus_lines
 
     def get_sliced_routes(self):
@@ -221,15 +225,15 @@ class LinestringSelector(object):
             # Foreach linestring:
             for linestring in selected_linestrings['geometry']:
                 # Get the sliced LineString & append to array
-                #print(linestring)
-                #print(type(linestring))
                 sliced_linestring = self._get_sliced_multi_linestring(linestring,
-                                                                      bus_start_stop_tuple[1],
+                                                                       bus_start_stop_tuple[1],
                                                                       bus_start_stop_tuple[2])
                 if sliced_linestring is not None and len(sliced_linestring) > 0:
                     sliced_linestrings_array.append(sliced_linestring)
         
         route_points = self.to_list_of_points(sliced_linestrings_array)
+        
+        
         end_time = time.time()
         print("Converted data to linestrings")
         print("time " + str(end_time - start_time))

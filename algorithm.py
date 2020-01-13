@@ -1,5 +1,4 @@
 from geopy import distance
-from Utils.database_manager import MongoDBManager
 from Utils.stops import stops, intercept
 from Utils.linestring_selector import LinestringSelector
 from Utils.routes_analyzer import routes_analyzer
@@ -93,11 +92,7 @@ def get_train_routes(initial_point, finishing_point):
     # STEP 3
     # Do the intersection in order to find the bus lines in common
     Ilist, Flist = intercept(Ilist, Flist)
-
-    
     print(f'train stops found: {Ilist}')
-    print(f'train stops found: {Flist}')
-
     # STEP 4
     # Create a list of train routes that have a starting point in Ilist and an end in Flist
     linestring_selector = LinestringSelector(Ilist, Flist, type_of_dataset="TRAIN")
@@ -145,17 +140,18 @@ def detect_vehicle_and_km(raw_user_route: list, snapped_user_route: list):
 
 
     if len(route_dictionaries) != 0:
+        #print("Space race between:")
+        #for route in route_dictionaries:
+        #    print(route['route'][0])
+        #    print(route['route'][len(route['route']) - 1])
+        #    print(route['percentage_user'])
+        #    print(route['number_user_coordinates'])
+        #    print(route['percentage_poly'])
+        #    print(route['number_polygons'])
+        #    print('-------------------------------------')
+        
         # STEP 6
         # Search the dictionary with the maximum metrics
-        print("Space race between:")
-        for route in route_dictionaries:
-            print(route['route'][0])
-            print(route['route'][len(route['route']) - 1])
-            print(route['percentage_user'])
-            print(route['number_user_coordinates'])
-            print(route['percentage_poly'])
-            print(route['number_polygons'])
-            print('-------------------------------------')
         evaluator = metrics_evaluator(route_dictionaries)
         best_route = evaluator.evaluate()
 
@@ -193,20 +189,22 @@ def find_points(user_route):
 def compute_kilometers(route: list):
     total_km = 0
     route_length = len(route)
+   
 
     for point in range(route_length - 1):
         p1 = route[point]
         p2 = route[point + 1]
-        p1 = (p1.y,p1.x)
-        p2 = (p2.y, p2.x)
-        total_km += distance.geodesic(p1, p2, ellipsoid='Intl 1924').km
+        p1 = (p1.x,p1.y)
+        p2 = (p2.x, p2.y)
     
+        total_km += distance.geodesic(p1, p2, ellipsoid='Intl 1924').km
+
     return total_km
 
 
 def elaborate_request(user_id, ticket_id, start_time, end_time, raw_data, snapped_data):
     # STEP 0
-    # Parse the GeoJSON.
+    # Create the JSON to save in the Database.
     user_data = {
         'user_id' : user_id,
         'ticket_id' : ticket_id,
@@ -222,7 +220,5 @@ def elaborate_request(user_id, ticket_id, start_time, end_time, raw_data, snappe
     vehicle, km_travelled = detect_vehicle_and_km(raw_user_route=raw_data, snapped_user_route=snapped_data)
     user_data['km_travelled'] = km_travelled
     user_data['transportation'] = vehicle
-
-    print(user_data)
 
     return user_data
